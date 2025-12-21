@@ -336,7 +336,7 @@
     <div id="lookupModal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <h3 style="margin:0;"><i class="fas fa-search"></i> Tra cứu (Ưu tiên: GĐ ít buổi > Chỗ ít)</h3>
+                <h3 style="margin:0;"><i class="fas fa-search"></i> Tra cứu môn học</h3>
                 <button onclick="closeModal('lookupModal')"
                     style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
             </div>
@@ -511,6 +511,7 @@
         }
 
         // --- CẬP NHẬT RENDER LOOKUP: ƯU TIÊN GĐ RẢNH + CHỖ ÍT ---
+        // --- CẬP NHẬT RENDER LOOKUP: ẨN MÔN HẾT CHỖ ---
         function renderLookup(data) {
             const stats = countSessions();
             const existingIdents = mySchedule.map(s => {
@@ -520,11 +521,19 @@
 
             let filtered = data.filter(item => {
                 const id = getCourseIdentity(item.classCode);
-                return !existingIdents.includes(`${id.base}|${id.type}`);
+
+                // Điều kiện 1: Môn chưa được thêm vào lịch
+                const isNotAdded = !existingIdents.includes(`${id.base}|${id.type}`);
+
+                // Điều kiện 2: Số chỗ phải lớn hơn 0 (MỚI THÊM)
+                const hasSeats = parseInt(item.seat) > 0;
+
+                return isNotAdded && hasSeats;
             });
 
             if (data.length > filtered.length) {
-                alert(`Đã lọc bỏ ${data.length - filtered.length} mã lớp vì môn đó đã có trong TKB rồi!`);
+                // Thông báo số lượng bị ẩn (bao gồm cả môn đã chọn và môn hết chỗ)
+                console.log(`Đã ẩn ${data.length - filtered.length} lớp (Do trùng hoặc hết chỗ).`);
             }
 
             // Thuật toán sắp xếp đa tầng:
@@ -544,27 +553,34 @@
             });
 
             const body = document.getElementById('lookupTableBody');
+
+            // Nếu lọc xong mà không còn môn nào
+            if (filtered.length === 0) {
+                body.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">Không tìm thấy lớp phù hợp hoặc tất cả đã hết chỗ.</td></tr>';
+                return;
+            }
+
             body.innerHTML = filtered.map(item => {
                 const p = getPhase(item.weeks);
                 const load = (p === 1) ? stats.gd1 : stats.gd2;
                 const isHeavy = load >= 10;
-                const isUrgent = parseInt(item.seat) <= 5; // Cảnh báo nếu chỗ <= 5
+                const isUrgent = parseInt(item.seat) <= 5;
 
                 return `
-                <tr class="${isHeavy ? 'row-warning' : ''}">
-                    <td>${item.regCode}</td>
-                    <td style="color:#be123c; font-weight:bold;">${item.classCode}</td>
-                    <td>${item.name} ${isHeavy ? '<br><small style="color:red; font-weight:bold;">⚠️ GD' + p + ' DÀY (' + load + ' buổi)</small>' : ''}</td>
-                    <td style="${isUrgent ? 'color:red; font-weight:bold;' : ''}">
-                        ${item.seat} 
-                        ${isUrgent ? '<br><small>🔥 SẮP HẾT!</small>' : ''}
-                    </td>
-                    <td>${item.weeks}</td>
-                    <td>${item.sessions.map(s => `<div>${s.day}: ${s.time} (${s.loc})</div>`).join('')}</td>
-                    <td style="font-weight:500; color:#0369a1;">${item.teacher}</td>
-                    <td><button class="btn-tool" style="background:#059669;" onclick="prepareAdd(${JSON.stringify(item).replace(/"/g, '&quot;')})">Chọn</button></td>
-                </tr>
-            `}).join('');
+        <tr class="${isHeavy ? 'row-warning' : ''}">
+            <td>${item.regCode}</td>
+            <td style="color:#be123c; font-weight:bold;">${item.classCode}</td>
+            <td>${item.name} ${isHeavy ? '<br><small style="color:red; font-weight:bold;">⚠️ GD' + p + ' DÀY (' + load + ' buổi)</small>' : ''}</td>
+            <td style="${isUrgent ? 'color:red; font-weight:bold;' : ''}">
+                ${item.seat} 
+                ${isUrgent ? '<br><small>🔥 SẮP HẾT!</small>' : ''}
+            </td>
+            <td>${item.weeks}</td>
+            <td>${item.sessions.map(s => `<div>${s.day}: ${s.time} (${s.loc})</div>`).join('')}</td>
+            <td style="font-weight:500; color:#0369a1;">${item.teacher}</td>
+            <td><button class="btn-tool" style="background:#059669;" onclick="prepareAdd(${JSON.stringify(item).replace(/"/g, '&quot;')})">Chọn</button></td>
+        </tr>
+    `}).join('');
         }
 
         function prepareAdd(item) {
