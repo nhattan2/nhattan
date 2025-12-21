@@ -11,11 +11,10 @@
         :root {
             --bg-body: #f8fafc;
             --primary: #be123c;
-            --secondary: #047857;
             --text: #334155;
             --card-bg: #ffffff;
             --border-radius: 10px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         * {
@@ -25,8 +24,7 @@
 
         body {
             margin: 0;
-            padding: 0;
-            background-color: var(--bg-body);
+            background: var(--bg-body);
             color: var(--text);
             height: 100vh;
             display: flex;
@@ -36,12 +34,11 @@
 
         header {
             height: 50px;
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
             z-index: 10;
         }
 
@@ -51,35 +48,25 @@
             margin: 0;
             text-transform: uppercase;
             font-weight: 800;
-            letter-spacing: 1px;
         }
 
         .app-container {
             flex: 1;
-            display: grid;
-            grid-template-columns: 1fr;
-            /* Đã chỉnh từ 320px 1fr sang 1fr để chiếm hết màn hình */
-            gap: 15px;
             padding: 15px;
             overflow: hidden;
-        }
-
-        .main-content {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            overflow: hidden;
         }
 
         .toolbar {
-            background: var(--card-bg);
-            padding: 8px 15px;
+            background: white;
+            padding: 10px 15px;
             border-radius: var(--border-radius);
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: var(--shadow);
-            flex-shrink: 0;
         }
 
         .total-badge {
@@ -88,7 +75,6 @@
             padding: 2px 10px;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 0.9rem;
         }
 
         .btn-tool {
@@ -106,12 +92,12 @@
         }
 
         .btn-tool:hover {
-            transform: translateY(-2px);
+            transform: translateY(-1px);
             filter: brightness(1.1);
         }
 
         .table-card {
-            background: var(--card-bg);
+            background: white;
             border-radius: var(--border-radius);
             flex: 1;
             overflow: hidden;
@@ -133,49 +119,30 @@
 
         th {
             background: #f1f5f9;
-            color: #334155;
             padding: 12px 10px;
             font-size: 0.75rem;
             text-align: left;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 5;
             border-bottom: 2px solid #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         td {
             padding: 10px;
             border-bottom: 1px solid #e2e8f0;
             font-size: 0.85rem;
-            vertical-align: middle;
-            color: #334155;
         }
 
-        tr:hover {
-            background-color: #f8fafc;
-        }
-
-        .tag {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            display: inline-block;
-            margin-right: 4px;
-        }
-
-        /* MODALS */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(3px);
             z-index: 2000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(2px);
         }
 
         .modal-box {
@@ -183,21 +150,18 @@
             border-radius: 12px;
             width: 95%;
             max-width: 1300px;
-            height: 90vh;
+            height: 85vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             overflow: hidden;
-            animation: popIn 0.2s;
         }
 
         .modal-header {
-            padding: 12px 20px;
+            padding: 15px 20px;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #fff;
         }
 
         .modal-body {
@@ -210,270 +174,93 @@
         }
 
         .lookup-left {
-            width: 200px;
+            width: 180px;
             display: flex;
             flex-direction: column;
             gap: 15px;
             justify-content: center;
-            align-items: center;
         }
 
         .lookup-right {
             flex: 1;
             background: white;
-            border-radius: 6px;
             border: 1px solid #e2e8f0;
+            border-radius: 8px;
             overflow: auto;
         }
 
-        .btn-disabled {
-            background: #cbd5e1 !important;
-            color: #64748b !important;
-            cursor: not-allowed !important;
-        }
-
-        .alert-box {
-            background: white;
-            padding: 25px;
+        .btn-giant {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 30px;
             border-radius: 12px;
-            text-align: center;
-            width: 380px;
-            max-width: 90%;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 1.2rem;
         }
 
-        @keyframes popIn {
-            from {
-                transform: scale(0.95);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+        .btn-delete-all {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
         }
 
-        /* TKB CSS */
         .tkb-container {
             display: flex;
-            gap: 20px;
-            width: 100%;
+            gap: 15px;
+            padding: 15px;
             height: 100%;
-            overflow: hidden;
-            padding: 10px;
-            background: #f8fafc;
+            width: 100%;
         }
 
-        .tkb-phase-box {
+        .tkb-box {
             flex: 1;
             background: white;
             border: 1px solid #cbd5e1;
-            border-radius: 8px;
             display: flex;
             flex-direction: column;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
-        .tkb-phase-header {
-            padding: 10px;
+        .tkb-head {
+            padding: 8px;
             text-align: center;
-            font-weight: 800;
             color: white;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-
-        .ph1 {
-            background: #f97316;
-        }
-
-        .ph2 {
-            background: #3b82f6;
-        }
-
-        .tkb-table-wrap {
-            flex: 1;
-            overflow: auto;
+            font-weight: bold;
         }
 
         .tkb-table {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
+            font-size: 0.7rem;
+        }
+
+        .tkb-table th,
+        .tkb-table td {
+            border: 1px solid #e2e8f0;
+            padding: 4px;
+            height: 85px;
+            vertical-align: top;
         }
 
         .tkb-table th {
-            background: #f1f5f9;
-            color: #334155;
-            border: 1px solid #e2e8f0;
-            padding: 8px;
-            font-size: 0.75rem;
-            text-align: center;
-            font-weight: 700;
-            height: 35px;
-        }
-
-        .tkb-table td {
-            border: 1px solid #e2e8f0;
-            padding: 2px;
-            vertical-align: top;
-            height: 100px;
-            background: white;
-        }
-
-        .tkb-shift-cell {
-            background: #fff7ed !important;
-            color: #c2410c !important;
-            font-weight: 700;
-            text-align: center;
-            vertical-align: middle !important;
-            width: 40px;
-            font-size: 0.8rem;
+            height: 30px;
+            background: #f8fafc;
         }
 
         .tkb-card {
             background: #ecfccb;
             border-left: 3px solid #65a30d;
-            padding: 4px;
+            padding: 3px;
             margin-bottom: 2px;
-            border-radius: 3px;
-            font-size: 0.7rem;
-            overflow: hidden;
-        }
-
-        .tkb-card b {
-            color: #15803d;
-            display: block;
-            margin-bottom: 1px;
-            font-size: 0.75rem;
-        }
-
-        .tkb-card-loc {
-            color: #b91c1c;
-            font-weight: 600;
-            margin-top: 1px;
-        }
-
-        /* BUTTONS */
-        .btn-giant {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: white;
-            border: none;
-            padding: 25px;
-            border-radius: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
-            transition: 0.2s;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-giant:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(79, 70, 229, 0.35);
-        }
-
-        .btn-clean-del {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.2s;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-        }
-
-        .btn-clean-del:hover {
-            background: #dc2626;
-        }
-
-        .badge-seat {
-            font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            display: inline-block;
-            min-width: 30px;
-            text-align: center;
-        }
-
-        .seat-low {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .seat-high {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .phase-badge {
-            display: inline-block;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            margin-top: 4px;
-        }
-
-        .p1-badge {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .p2-badge {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .p-both-badge {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .btn-submit {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.2s;
-        }
-
-        .form-group {
-            margin-bottom: 10px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            background: #f8fafc;
-            font-size: 0.85rem;
+            border-radius: 2px;
         }
     </style>
 </head>
@@ -485,55 +272,48 @@
     </header>
 
     <div class="app-container">
-        <div class="main-content">
-            <div class="toolbar">
-                <div style="font-weight:700; color:#374151;">Tổng: <span class="total-badge" id="totalCredits">0</span>
-                    TC</div>
-                <div style="display:flex; gap:8px;">
-                    <button class="btn-tool" style="background:#059669;" onclick="openLookupModal()"><i
-                            class="fas fa-search"></i> Chọn môn</button>
-                    <button class="btn-tool" style="background:#7c3aed;" onclick="autoQuickImport()"><i
-                            class="fas fa-bolt"></i> Nhanh</button>
-
-                    <button class="btn-tool" style="background:#ec4899;" onclick="snapFullTable()"><i
-                            class="fas fa-camera"></i> Chụp bảng</button>
-
-                    <button class="btn-tool" style="background:#f59e0b;" onclick="openTKB()"><i
-                            class="far fa-calendar-alt"></i> TKB</button>
-                    <button class="btn-tool" style="background:#0891b2;" onclick="exportData()"><i
-                            class="fas fa-save"></i> Lưu</button>
-                    <button class="btn-tool" style="background:#dc2626;" onclick="clearAll()"><i
-                            class="fas fa-trash"></i> Xóa</button>
-                    <input type="file" id="fileInput" hidden accept=".json" onchange="importData(this)">
-                    <button class="btn-tool" style="background:#475569;"
-                        onclick="document.getElementById('fileInput').click()"><i class="fas fa-folder-open"></i>
-                        Mở</button>
-                </div>
+        <div class="toolbar">
+            <div style="font-weight:700;">Tổng: <span class="total-badge" id="totalCredits">0</span> TC</div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-tool" style="background:#059669;" onclick="openModal('lookupModal')"><i
+                        class="fas fa-search"></i> Chọn môn</button>
+                <button class="btn-tool" style="background:#f59e0b;" onclick="generateTKB()"><i
+                        class="far fa-calendar-alt"></i> TKB</button>
+                <button class="btn-tool" style="background:#ec4899;" onclick="snapTable()"><i class="fas fa-camera"></i>
+                    Chụp bảng</button>
+                <button class="btn-tool" style="background:#0891b2;" onclick="exportData()"><i class="fas fa-save"></i>
+                    Lưu</button>
+                <button class="btn-tool" style="background:#475569;"
+                    onclick="document.getElementById('fileInput').click()"><i class="fas fa-folder-open"></i>
+                    Mở</button>
+                <input type="file" id="fileInput" hidden accept=".json" onchange="importData(this)">
+                <button class="btn-tool" style="background:#dc2626;" onclick="clearAll()"><i class="fas fa-trash"></i>
+                    Xóa hết</button>
             </div>
+        </div>
 
-            <div class="table-card" id="captureArea">
-                <div class="table-scroll">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th width="10%">Mã ĐK</th>
-                                <th width="15%">Mã Lớp</th>
-                                <th width="20%">Tên Môn</th>
-                                <th width="8%">Tuần</th>
-                                <th width="12%">Lịch Học</th>
-                                <th width="15%">Địa Điểm</th>
-                                <th width="15%">Giảng Viên</th>
-                                <th width="5%"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="schedBody">
-                            <tr>
-                                <td colspan="8" style="text-align:center; padding:40px; color:#9ca3af;">Chưa có môn nào
-                                    trong lịch.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="table-card" id="mainTableArea">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="10%">Mã ĐK</th>
+                            <th width="12%">Mã Lớp</th>
+                            <th>Tên Môn</th>
+                            <th width="8%">Tuần</th>
+                            <th width="15%">Lịch Học</th>
+                            <th width="18%">Địa Điểm</th>
+                            <th width="15%">Giảng Viên</th>
+                            <th width="5%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="mainTableBody">
+                        <tr>
+                            <td colspan="8" style="text-align:center; padding:50px; color:#94a3b8;">Trống. Hãy bấm "Chọn
+                                môn" và Dán dữ liệu.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -541,486 +321,273 @@
     <div id="lookupModal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <h2 style="margin:0; font-size:1.3rem; color:#1f2937;"><i class="fas fa-book-open"></i> Tra Cứu</h2>
-                <button onclick="document.getElementById('lookupModal').style.display='none'"
-                    style="border:none; background:none; font-size:24px; cursor:pointer; color:#6b7280;">&times;</button>
+                <h3 style="margin:0;"><i class="fas fa-search"></i> Tra cứu môn học</h3>
+                <button onclick="closeModal('lookupModal')"
+                    style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="lookup-left">
-                    <button class="btn-giant" onclick="pasteAndAnalyzeLookup()"><i class="fas fa-clipboard-check"></i>
-                        DÁN</button>
-                    <button class="btn-clean-del" onclick="clearLookupData()"><i class="fas fa-trash-alt"></i>
-                        XÓA</button>
+                    <button class="btn-giant" onclick="handlePaste()"><i class="fas fa-clipboard"></i> DÁN</button>
+                    <button class="btn-delete-all"
+                        onclick="document.getElementById('lookupTableBody').innerHTML=''">XÓA</button>
                 </div>
                 <div class="lookup-right">
-                    <table style="width:100%;">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Mã ĐK</th>
                                 <th>Mã Lớp</th>
                                 <th>Tên Môn</th>
-                                <th style="width:60px;">Chỗ</th>
+                                <th>Chỗ</th>
                                 <th>Tuần</th>
-                                <th>Lịch</th>
-                                <th>GV</th>
+                                <th>Lịch học</th>
+                                <th>Giảng viên</th>
                                 <th>Chọn</th>
                             </tr>
                         </thead>
-                        <tbody id="lookupTableBody">
-                            <tr>
-                                <td colspan="8" style="text-align:center; padding:40px; color:#9ca3af;">Vui lòng dán dữ
-                                    liệu.</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="lookupTableBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="quickModal" class="modal-overlay">
-        <div class="alert-box" style="width:350px; padding:30px;">
-            <div style="font-size:3rem; margin-bottom:15px; color:#7c3aed;">⚡</div>
-            <h2 style="color:#334155; margin:0 0 20px 0;">Dán Thủ Công</h2>
-            <p style="font-size:0.9rem; color:#64748b;">Vui lòng dán vào đây:</p>
-            <textarea id="quickInput"
-                style="width:100%; height:120px; border:1px solid #d1d5db; padding:12px; border-radius:8px; font-size:0.8rem;"
-                placeholder="Ctrl+V vào đây..."></textarea>
-            <div style="text-align:right; margin-top:10px;">
-                <button onclick="manualAnalyzeQuick()" class="btn-submit"
-                    style="width:auto; display:inline-block; background:#7c3aed;">Xử lý</button>
-                <button onclick="document.getElementById('quickModal').style.display='none'" class="btn-submit"
-                    style="width:auto; background:#e5e7eb; color:#374151;">Đóng</button>
-            </div>
-        </div>
-    </div>
-
     <div id="creditModal" class="modal-overlay">
-        <div class="alert-box" style="width:350px; text-align:left;">
-            <h3 style="color:#be123c; margin:0 0 10px 0; text-align:center;">Số Tín Chỉ</h3>
-            <p id="creditSubName"
-                style="font-weight:700; font-size:0.95rem; margin:0 0 15px 0; color:#1f2937; text-align:center;"></p>
-            <div class="form-group">
-                <select id="popupCredits" onchange="toggleCustom(this, 'popupCustomCredits')">
-                    <option value="3" selected>3 Tín</option>
-                    <option value="1">1 Tín</option>
-                    <option value="2">2 Tín</option>
-                    <option value="4">4 Tín</option>
-                    <option value="5">5 Tín</option>
-                    <option value="6">6 Tín</option>
-                    <option value="custom" style="color:#be123c; font-weight:bold;">-- Khác --</option>
-                </select>
-                <input type="number" id="popupCustomCredits" style="display:none; margin-top:10px;"
-                    placeholder="Nhập số TC..." autocomplete="off">
-            </div>
+        <div class="modal-box" style="max-width:350px; height:auto; padding:20px;">
+            <h3 style="margin-top:0;">Số tín chỉ</h3>
+            <p id="targetSub" style="font-weight:bold; color:#be123c;"></p>
+            <select id="creditInput" style="width:100%; padding:10px; border-radius:5px;">
+                <option value="3">3 Tín chỉ</option>
+                <option value="2" selected>2 Tín chỉ</option>
+                <option value="1">1 Tín chỉ</option>
+                <option value="4">4 Tín chỉ</option>
+            </select>
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="confirmCredit()" class="btn-submit">OK</button>
-                <button onclick="document.getElementById('creditModal').style.display='none'" class="btn-submit"
-                    style="background:#e5e7eb; color:#374151;">Hủy</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="alertModal" class="modal-overlay" style="z-index:9999;">
-        <div class="alert-box">
-            <div id="alertIcon" style="font-size:40px; margin-bottom:10px;">🔔</div>
-            <h3 id="alertMsg" style="margin:10px 0; color:#1f2937; font-size:1rem; line-height:1.5;"></h3>
-            <button onclick="document.getElementById('alertModal').style.display='none'" class="btn-submit"
-                style="width:auto; padding:10px 30px;">OK</button>
-        </div>
-    </div>
-
-    <div id="confirmModal" class="modal-overlay" style="z-index:10000;">
-        <div class="alert-box">
-            <div style="font-size:40px; margin-bottom:10px;">⚠️</div>
-            <h3 id="confirmMsg" style="margin:10px 0; color:#1f2937; font-size:1rem; line-height:1.5;">Bạn có chắc chắn?
-            </h3>
-            <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
-                <button id="confirmYesBtn" class="btn-submit"
-                    style="background:#ef4444; width:auto; padding:10px 30px;">Xóa</button>
-                <button onclick="document.getElementById('confirmModal').style.display='none'" class="btn-submit"
-                    style="background:#e5e7eb; color:#374151; width:auto; padding:10px 30px;">Hủy</button>
+                <button class="btn-tool" style="background:#059669; flex:1; justify-content:center;"
+                    onclick="addSubject()">Xác nhận</button>
+                <button class="btn-tool" style="background:#94a3b8; flex:1; justify-content:center;"
+                    onclick="closeModal('creditModal')">Hủy</button>
             </div>
         </div>
     </div>
 
     <div id="tkbModal" class="modal-overlay">
-        <div class="modal-box" style="max-width:1600px; height:95vh;">
-            <div class="modal-header" style="background:#fff7ed;">
-                <h2 style="color:#c2410c; margin:0; display:flex; align-items:center; gap:10px;"><i
-                        class="far fa-calendar-alt"></i> THỜI KHÓA BIỂU</h2>
+        <div class="modal-box" style="max-width:1400px; height:90vh;">
+            <div class="modal-header">
+                <h3>Thời khóa biểu dự kiến</h3>
                 <div style="display:flex; gap:10px;">
-                    <button onclick="snapElement('tkbPreviewBody')" class="btn-tool" style="background:#0ea5e9;">📸 Chụp
+                    <button class="btn-tool" style="background:#0ea5e9;" onclick="snapElement('tkbCaptureArea')">📸 Chụp
                         ảnh</button>
-                    <button onclick="document.getElementById('tkbModal').style.display='none'"
-                        style="border:none; background:none; font-size:24px; cursor:pointer; color:#9ca3af;">&times;</button>
+                    <button onclick="closeModal('tkbModal')"
+                        style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
                 </div>
             </div>
-            <div class="modal-body" id="tkbPreviewBody" style="padding:0;"></div>
+            <div id="tkbCaptureArea" style="background:#f8fafc; flex:1; overflow:auto;">
+                <div id="tkbContent" class="tkb-container"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        let scheduleData = [], lookupData = [], pendingSelection = null;
-        let confirmCallback = null;
+        let mySchedule = [];
+        let tempSubject = null;
 
-        function getRootCode(code) {
-            if (!code) return "";
-            // Tách mã lớp thành các phần, ví dụ: "CSN 161 P1" -> ["CSN", "161", "P1"]
-            let parts = code.trim().replace(/\s+/g, ' ').split(' ');
-            if (parts.length < 2) return code.toUpperCase();
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-            let prefix = (parts[0] + " " + parts[1]).toUpperCase(); // Ví dụ: "CSN 161"
-            let suffix = parts[2] || ""; // Ví dụ: "P", "P1", "D"
-
-            // KIỂM TRA LOGIC:
-            // Nếu hậu tố (mã lớp) có chứa số (như P1, L2, P2) -> Đây là lớp Thực hành/Thành phần
-            if (/\d/.test(suffix)) {
-                return prefix + " " + suffix.toUpperCase(); // Trả về "CSN 161 P1" (Định danh riêng)
-            }
-
-            // Nếu không có số (như P, D, A) -> Coi là lớp Lý thuyết chung
-            return prefix; // Trả về "CSN 161" (Dùng chung định danh để check trùng giữa các lớp lý thuyết)
-        }
-
-        function checkDuplicate(newCode) {
-            let rootNew = getRootCode(newCode);
-            // Tìm trong danh sách đã chọn xem có môn nào có "Định danh" giống hệt không
-            return scheduleData.find(existing => getRootCode(existing.code) === rootNew);
-        }
-
-        function checkDuplicate(newCode) {
-            let rootNew = getRootCode(newCode);
-            return scheduleData.find(existing => getRootCode(existing.code) === rootNew);
-        }
-
-        function toMin(s) { let [h, m] = s.split(':'); return h * 60 + (+m); }
-
-        async function getClipboardText() {
+        async function handlePaste() {
             try {
                 const text = await navigator.clipboard.readText();
-                if (!text.trim()) { showAlert("Bộ nhớ tạm trống!", "error"); return null; }
-                return text;
-            } catch (err) { return null; }
+                if (!text) return alert("Clipboard trống!");
+                const parsed = parseData(text);
+                renderLookup(parsed);
+            } catch (e) { alert("Vui lòng cho phép quyền truy cập Clipboard!"); }
         }
 
-        async function autoQuickImport() {
-            const text = await getClipboardText();
-            if (text) {
-                runQuickLogic(text);
-            } else {
-                document.getElementById('quickInput').value = '';
-                document.getElementById('quickModal').style.display = 'flex';
-                document.getElementById('quickInput').focus();
-            }
-        }
+        // --- ĐÂY LÀ PHẦN ĐÃ SỬA LỖI GIẢNG VIÊN ---
+        function parseData(raw) {
+            const results = [];
+            let subjectNameHeader = "Môn học";
+            let nameMatch = raw.match(/Môn học\s+([A-ZÀ-Ỹ\s]+)\n/i) || raw.match(/Thông tin môn học\s+([A-ZÀ-Ỹ\s]+)\n/i);
+            if (nameMatch) subjectNameHeader = nameMatch[1].replace(/[A-Z]{2,}\s\d{3,}/, "").replace(":", "").trim();
 
-        function manualAnalyzeQuick() { runQuickLogic(document.getElementById('quickInput').value); }
-
-        function showConfirm(msg, callback) {
-            document.getElementById('confirmMsg').innerText = msg;
-            confirmCallback = callback;
-            document.getElementById('confirmModal').style.display = 'flex';
-        }
-
-        document.getElementById('confirmYesBtn').onclick = function () {
-            if (confirmCallback) confirmCallback();
-            document.getElementById('confirmModal').style.display = 'none';
-        }
-
-        function openLookupModal() { clearLookupData(); document.getElementById('lookupModal').style.display = 'flex'; }
-
-        async function pasteAndAnalyzeLookup() {
-            const text = await getClipboardText();
-            if (text) runLookupLogic(text);
-            else showAlert("Không thể tự đọc Clipboard. Hãy cấp quyền hoặc dùng phím tắt.", "error");
-        }
-
-        function clearLookupData() { document.getElementById('lookupTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px; color:#9ca3af;">Dữ liệu trống.</td></tr>'; }
-
-        function parseRawData(raw) {
-            if (!raw || !raw.trim()) return [];
             raw = raw.replace(/Tuần hủy:.*(\n|$)/g, " ").replace(/Hủy \d+.*(\n|$)/g, " ");
-            const noise = ["ĐẠI HỌC DUY TÂN", "--Chọn Mã", "Danh sách Lớp"];
-            noise.forEach(n => raw = raw.split(n)[0] + (raw.split(n)[1] || ""));
-            const shortCodeRegex = /([A-Z]{2,}(?:-[A-Z]+)*\s\d{3,}\s[A-Z0-9]+)/g;
-            const longCodeRegex = /\b[A-Z0-9]{10,}\b/g;
-            let matches = [], results = [];
-            let match;
-            while ((match = shortCodeRegex.exec(raw)) !== null) matches.push({ code: match[0], index: match.index });
+            const classRegex = /([A-Z]{2,}-\d{3,}\s[A-Z0-9]+|[A-Z]{2,}\s\d{3,}\s[A-Z0-9]+)/g;
+            let matches = [...raw.matchAll(classRegex)];
 
-            for (let i = 0; i < matches.length; i++) {
-                try {
-                    let currentCode = matches[i].code.trim();
-                    let block = raw.substring(matches[i].index, (i < matches.length - 1) ? matches[i + 1].index : raw.length);
-                    let regCode = "---";
-                    let regMatches = block.match(longCodeRegex);
-                    if (regMatches) {
-                        let valid = regMatches.find(c => c.replace(/\s/g, '') !== currentCode.replace(/\s/g, '') && c.length > 9);
-                        if (valid) regCode = valid;
+            const locMap = {
+                "Hòa Khánh": "120 Hoàng Minh Thảo", "Phan Thanh": "209 Phan Thanh",
+                "K7/25 Quang Trung": "K7/25 Quang Trung", "03 Quang Trung": "03 Quang Trung",
+                "Quang Trung": "K7/25 Quang Trung", "254 Nguyễn Văn Linh": "254 Nguyễn Văn Linh",
+                "137 Nguyễn Văn Linh": "137 Nguyễn Văn Linh", "Nguyễn Văn Linh": "254 Nguyễn Văn Linh",
+                "Phan Văn Trị": "78 Phan Văn Trị", "Online": "Online"
+            };
+
+            matches.forEach((m, i) => {
+                let block = raw.substring(m.index, matches[i + 1] ? matches[i + 1].index : raw.length);
+                let regCode = (block.match(/\b[A-Z0-9]{10,}\b/) || ["---"])[0];
+                let seat = (block.match(/(LEC|LAB|WOR|DEM)\s+(\d+)/) || [0, 0, 0])[2];
+                let weeks = (block.match(/(\d+)--(\d+)/) || [0, 33, 40]);
+
+                // SỬA LỖI TẠI ĐÂY: Tách linh hoạt theo dòng hoặc khoảng trắng dài (Tab)
+                let teacher = "Chưa rõ";
+                let parts = block.split(/\n|\t|\s{3,}/).map(p => p.trim()).filter(p => p.length > 5);
+
+                // Trạng thái thường gặp để nhận biết điểm kết thúc của tên giảng viên
+                const statusList = ["CÒN HẠN", "HẾT HẠN", "LỚP HỌC", "ĐÃ ĐĂNG KÝ"];
+
+                for (let p of parts) {
+                    // Tên giảng viên: In hoa toàn bộ, không chứa số, không phải từ khóa hệ thống
+                    if (p === p.toUpperCase() &&
+                        !/\d/.test(p) &&
+                        !p.includes("ĐỊA ĐIỂM") &&
+                        !p.includes("LEC") &&
+                        !p.includes("ONLINE") &&
+                        !statusList.some(status => p.includes(status)) &&
+                        p.split(' ').length >= 2) {
+                        teacher = p;
+                        break;
                     }
-                    let name = "";
-                    let typeMatch = block.substring(currentCode.length).match(/(LEC|LAB|WOR|DEM|STU|\d{2}--\d{2})/);
-                    if (typeMatch) {
-                        let rawName = block.substring(currentCode.length, currentCode.length + typeMatch.index);
-                        name = rawName.replace(/\b[A-Z0-9]{10,}\b/g, "").trim().replace(/^[^a-zA-ZÀ-ỹ]+/, "").trim();
+                }
+
+                const timeRegex = /(T\d|CN)[\s:]*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/g;
+                let sessions = [];
+                let tMatches = [...block.matchAll(timeRegex)];
+
+                let lastTimeIdx = tMatches.length > 0 ? tMatches[tMatches.length - 1].index : 0;
+                let foundLocs = [];
+                Object.keys(locMap).forEach(key => {
+                    let pos = -1;
+                    while ((pos = block.indexOf(key, pos + 1)) !== -1) {
+                        if (pos > lastTimeIdx) foundLocs.push({ pos, text: locMap[key] });
                     }
-                    if (!name || name.length < 2) name = currentCode;
+                });
+                foundLocs.sort((a, b) => a.pos - b.pos);
+                let finalLocs = foundLocs.slice(-tMatches.length);
 
-                    let seatVal = 0;
-                    let nearHeader = block.substring(0, 100);
-                    if (!nearHeader.toLowerCase().includes("hết chỗ")) {
-                        let typeMatchForSeat = nearHeader.match(/(?:LEC|LAB|WOR|DEM)\s+(\d+)/);
-                        if (typeMatchForSeat) seatVal = parseInt(typeMatchForSeat[1]);
-                    }
+                tMatches.forEach((tm, idx) => {
+                    let loc = "Chưa rõ";
+                    if (finalLocs.length > 0) loc = finalLocs[idx] ? finalLocs[idx].text : finalLocs[finalLocs.length - 1].text;
+                    sessions.push({ day: tm[1], time: `${tm[2]}-${tm[3]}`, loc, start: tm[2] });
+                });
 
-                    let weekMatch = block.match(/(\d{1,2})--(\d{1,2})/);
-                    let sW = weekMatch ? parseInt(weekMatch[1]) : 0, eW = weekMatch ? parseInt(weekMatch[2]) : 0;
-                    let numbers = block.match(/\b[1-9]\b/g);
-                    let credit = (numbers && numbers.length > 0) ? parseInt(numbers[numbers.length - 1]) : 3;
-
-                    let lecturer = "";
-                    let lines = block.replace(/Còn Hạn Đăng Ký|Lớp Học Chưa Bắt Đầu|Lớp Học Đã Kết Thúc|Hết Hạn Đăng Ký|LEC|LAB|WOR|DEM/g, "").split('\n').filter(l => l.trim().length > 0);
-                    for (let k = lines.length - 1; k >= 0; k--) {
-                        let line = lines[k].trim();
-                        if (line.length > 5 && !/\d/.test(line) && line === line.toUpperCase() && !line.includes("ĐỊA ĐIỂM") && !line.includes("PHÒNG")) { lecturer = line; break; }
-                    }
-
-                    const timeRegex = /(T\d|CN)[\s:]*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/g;
-                    let tMatch, defaultLoc = "Chưa rõ";
-                    if (block.includes("Hòa Khánh")) defaultLoc = "Hòa Khánh Nam";
-                    else if (block.includes("Phan Thanh")) defaultLoc = "209 Phan Thanh";
-                    else if (block.includes("Quang Trung")) defaultLoc = "K7/25 Quang Trung";
-                    else if (block.includes("Nguyễn Văn Linh")) defaultLoc = "254 Nguyễn Văn Linh";
-                    else if (block.includes("Online")) defaultLoc = "Online";
-
-                    let roomMatch = block.match(/\b\d{3,4}\b/g);
-                    let room = roomMatch ? roomMatch[0] : "";
-
-                    while ((tMatch = timeRegex.exec(block)) !== null) {
-                        let day = tMatch[1] === 'CN' ? '8' : tMatch[1].replace('T', '');
-                        let finalLoc = (room && defaultLoc !== "Online") ? `P.${room} - ${defaultLoc}` : defaultLoc;
-                        results.push({ regCode, code: currentCode, name, credits: credit, day, sT: tMatch[2], eT: tMatch[3], sMin: toMin(tMatch[2]), eMin: toMin(tMatch[3]), sW, eW, location: finalLoc, lecturer, seat: seatVal, phase: 0 });
-                    }
-                } catch (e) { console.error(e); }
-            }
-            let minStart = 999, maxEnd = 0;
-            results.forEach(c => { if (c.sW < minStart) minStart = c.sW; if (c.eW > maxEnd) maxEnd = c.eW; });
-            let threshold = (minStart + maxEnd) / 2;
-            results.forEach(c => {
-                if (c.eW <= threshold + 1) c.phase = 1; else if (c.sW >= threshold - 1) c.phase = 2; else c.phase = 3;
+                if (sessions.length > 0) {
+                    results.push({ regCode, classCode: m[0], name: subjectNameHeader, seat, weeks: `${weeks[1]}-${weeks[2]}`, teacher, sessions });
+                }
             });
             return results;
         }
 
-        function runLookupLogic(raw) {
-            const parsed = parseRawData(raw);
-            if (parsed.length === 0) { document.getElementById('lookupTableBody').innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px;">Không tìm thấy dữ liệu!</td></tr>`; return; }
-            const grouped = {};
-            parsed.forEach(p => { if (!grouped[p.code]) grouped[p.code] = { ...p, schedules: [] }; grouped[p.code].schedules.push(p); });
-            lookupData = Object.values(grouped).filter(item => item.seat > 0).sort((a, b) => (a.sW - b.sW) || (a.seat - b.seat));
-            const tb = document.getElementById('lookupTableBody'); tb.innerHTML = '';
-            lookupData.forEach((item, idx) => {
-                let schedStr = item.schedules.map(s => `<div>T${s.day}: ${s.sT}-${s.eT}</div>`).join('');
-                let duplicate = checkDuplicate(item.code);
-                let btnHTML = duplicate ? `<button class="btn-tool btn-disabled">⛔ Đã có</button>` : `<button class="btn-tool" style="background:#059669; padding:6px 12px;" onclick="preSelect(${idx})">Chọn</button>`;
-                let phaseBadge = item.phase === 1 ? `<div class="phase-badge p1-badge">GĐ 1</div>` : (item.phase === 2 ? `<div class="phase-badge p2-badge">GĐ 2</div>` : `<div class="phase-badge p-both-badge">Cả 2</div>`);
-                let tr = document.createElement('tr');
-                tr.innerHTML = `<td style="font-family:monospace;">${item.regCode}</td><td style="font-weight:bold; color:#be123c;">${item.code}</td><td style="font-weight:600;">${item.name}</td><td><span class="badge-seat ${item.seat < 5 ? "seat-low" : "seat-high"}">${item.seat}</span></td><td><b>${item.sW}-${item.eW}</b>${phaseBadge}</td><td style="font-size:13px;">${schedStr}</td><td style="font-size:12px;">${item.lecturer}</td><td>${btnHTML}</td>`;
-                tb.appendChild(tr);
-            });
+        function renderLookup(data) {
+            const body = document.getElementById('lookupTableBody');
+            body.innerHTML = data.map((item, idx) => `
+                <tr>
+                    <td>${item.regCode}</td>
+                    <td style="color:#be123c; font-weight:bold;">${item.classCode}</td>
+                    <td>${item.name}</td>
+                    <td>${item.seat}</td>
+                    <td>${item.weeks}</td>
+                    <td>${item.sessions.map(s => `<div>${s.day}: ${s.time} (${s.loc})</div>`).join('')}</td>
+                    <td style="font-weight:500; color:#0369a1;">${item.teacher}</td>
+                    <td><button class="btn-tool" style="background:#059669;" onclick="prepareAdd(${JSON.stringify(item).replace(/"/g, '&quot;')})">Chọn</button></td>
+                </tr>
+            `).join('');
         }
 
-        function runQuickLogic(raw) {
-            const parsed = parseRawData(raw);
-            if (parsed.length === 0) return showAlert("Không tìm thấy dữ liệu!", "error");
-            const groupedParsed = {}; parsed.forEach(p => { if (!groupedParsed[p.code]) groupedParsed[p.code] = []; groupedParsed[p.code].push(p); });
-            let count = 0, duplicates = 0;
-            for (let code in groupedParsed) {
-                if (checkDuplicate(code)) { duplicates++; continue; }
-                let baseId = Date.now() + Math.floor(Math.random() * 1000);
-                groupedParsed[code].forEach((s, i) => { scheduleData.push({ id: baseId, subId: baseId + '_' + i, ...s, startT: s.sT, endT: s.eT, startW: s.sW, endW: s.eW }); });
-                count++;
-            }
-            document.getElementById('quickModal').style.display = 'none'; renderTable();
-            showAlert(duplicates > 0 ? `Đã thêm ${count} môn. Bỏ qua ${duplicates} môn trùng!` : `Thành công! Đã thêm ${count} môn.`, "success");
+        function prepareAdd(item) {
+            tempSubject = item;
+            document.getElementById('targetSub').innerText = item.classCode + " - " + item.name;
+            openModal('creditModal');
         }
 
-        function preSelect(idx) {
-            pendingSelection = lookupData[idx];
-            document.getElementById('creditSubName').innerText = pendingSelection.code + " - " + pendingSelection.name;
-            document.getElementById('popupCredits').value = "3";
-            document.getElementById('popupCustomCredits').style.display = "none";
-            document.getElementById('creditModal').style.display = 'flex';
+        function addSubject() {
+            const tc = document.getElementById('creditInput').value;
+            mySchedule.push({ ...tempSubject, credits: parseInt(tc), id: Date.now() });
+            closeModal('creditModal'); closeModal('lookupModal');
+            renderMainTable();
         }
 
-        function confirmCredit() {
-            let val = parseInt(document.getElementById('popupCredits').value);
-            if (isNaN(val)) val = parseInt(document.getElementById('popupCustomCredits').value) || 0;
-            let baseId = Date.now();
-            pendingSelection.schedules.forEach((s, i) => {
-                scheduleData.push({ id: baseId, subId: baseId + '_' + i, regCode: pendingSelection.regCode, code: pendingSelection.code, name: pendingSelection.name, credits: val, startW: pendingSelection.sW, endW: pendingSelection.eW, day: s.day, startT: s.sT, endT: s.eT, sMin: s.sMin, eMin: s.eMin, location: pendingSelection.location, lecturer: pendingSelection.lecturer });
-            });
-            document.getElementById('creditModal').style.display = 'none';
-            renderTable(); showAlert(`Đã thêm môn: ${pendingSelection.code}`, "success");
-        }
-
-        function renderTable() {
-            const tb = document.getElementById('schedBody');
-            tb.innerHTML = '';
-
-            // 1. Nhóm các bản ghi theo ID môn học
-            const groupsMap = {};
-            scheduleData.forEach(s => {
-                if (!groupsMap[s.id]) groupsMap[s.id] = [];
-                groupsMap[s.id].push(s);
-            });
-
-            // Chuyển Map thành Array để sắp xếp
-            let groupsArray = Object.values(groupsMap);
-
-            if (groupsArray.length === 0) {
-                tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:#9ca3af;">Chưa có môn nào trong lịch.</td></tr>`;
-                updateTotal();
+        function renderMainTable() {
+            const body = document.getElementById('mainTableBody');
+            if (mySchedule.length === 0) {
+                body.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:50px;">Trống.</td></tr>';
+                document.getElementById('totalCredits').innerText = 0;
                 return;
             }
+            body.innerHTML = mySchedule.map(item => `
+                <tr>
+                    <td style="font-family:monospace;">${item.regCode}</td>
+                    <td style="font-weight:bold; color:#be123c;">${item.classCode}</td>
+                    <td style="font-weight:600;">${item.name}<br><small>${item.credits} TC</small></td>
+                    <td>${item.weeks}</td>
+                    <td>${item.sessions.map(s => `<div>${s.day} ${s.time}</div>`).join('')}</td>
+                    <td>${item.sessions.map(s => `<div>📍 ${s.loc}</div>`).join('')}</td>
+                    <td style="font-weight:500; color:#0369a1;">${item.teacher}</td>
+                    <td><button style="border:none; color:#ef4444; background:none; cursor:pointer;" onclick="removeSub(${item.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+            document.getElementById('totalCredits').innerText = mySchedule.reduce((sum, i) => sum + i.credits, 0);
+        }
 
-            // 2. LOGIC SẮP XẾP: GD1 -> Cả 2 -> GD2
-            groupsArray.sort((a, b) => {
-                const itemA = a[0];
-                const itemB = b[0];
+        function removeSub(id) { mySchedule = mySchedule.filter(i => i.id !== id); renderMainTable(); }
+        function clearAll() { if (confirm("Xóa hết?")) { mySchedule = []; renderMainTable(); } }
 
-                // Hàm xác định độ ưu tiên (Số càng nhỏ càng nằm trên đầu)
-                const getPriority = (item) => {
-                    // Dựa trên logic phase đã tính trong parseRawData:
-                    // Phase 1: GD1, Phase 2: GD2, Phase 3: Cả 2
-                    if (item.phase === 1) return 1; // Ưu tiên 1: GĐ1
-                    if (item.phase === 3) return 2; // Ưu tiên 2: Cả 2
-                    if (item.phase === 2) return 3; // Ưu tiên 3: GĐ2
-                    return 4;
+        function exportData() {
+            if (mySchedule.length === 0) return alert("Trống!");
+            const blob = new Blob([JSON.stringify(mySchedule)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = "LichHoc.json"; a.click();
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    mySchedule = JSON.parse(e.target.result);
+                    renderMainTable(); alert("Đã mở file!");
                 };
-
-                return getPriority(itemA) - getPriority(itemB);
-            });
-
-            // 3. Hiển thị các nhóm đã sắp xếp
-            groupsArray.forEach(g => {
-                let f = g[0];
-                // Xác định nhãn hiển thị (Badge)
-                let phaseTag = '';
-                if (f.phase === 1) {
-                    phaseTag = '<span class="tag" style="background:#ffedd5; color:#9a3412;">GĐ1</span>';
-                } else if (f.phase === 2) {
-                    phaseTag = '<span class="tag" style="background:#dbeafe; color:#1e40af;">GĐ2</span>';
-                } else {
-                    phaseTag = '<span class="tag" style="background:#dcfce7; color:#166534;">Cả 2</span>';
-                }
-
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-            <td style="font-family:monospace;">${f.regCode || '---'}</td>
-            <td style="font-weight:bold; color:#be123c;">${f.code}</td>
-            <td style="font-weight:600; color:#0369a1;">${f.name}<br><small>${f.credits} tín chỉ</small></td>
-            <td><b>${f.startW}-${f.endW}</b><br>${phaseTag}</td>
-            <td>${g.map(s => `<div>T${s.day} <b>${s.startT}-${s.endT}</b></div>`).join('')}</td>
-            <td>${g.map(s => `<div>📍 ${s.location}</div>`).join('')}</td>
-            <td style="font-style:italic;">${f.lecturer}</td>
-            <td><button onclick="deleteSubject(${f.id})" style="border:none; background:none; cursor:pointer; color:#ef4444;"><i class="fas fa-trash"></i></button></td>
-        `;
-                tb.appendChild(tr);
-            });
-
-            updateTotal();
+                reader.readAsText(file);
+            }
         }
 
-        function deleteSubject(id) { showConfirm("Xóa môn này?", () => { scheduleData = scheduleData.filter(s => s.id !== parseInt(id)); renderTable(); }); }
-        function clearAll() { showConfirm("Xóa TOÀN BỘ lịch?", () => { scheduleData = []; renderTable(); }); }
-        function updateTotal() { const unique = new Set(); let sum = 0; scheduleData.forEach(s => { let root = getRootCode(s.code); if (!unique.has(root)) { unique.add(root); sum += s.credits; } }); document.getElementById('totalCredits').innerText = sum; }
-
-        function openTKB() {
-            if (scheduleData.length === 0) return showAlert("Lịch trống!", "error");
-            let minW = 100, maxW = 0;
-            scheduleData.forEach(s => { if (s.startW < minW) minW = s.startW; if (s.endW > maxW) maxW = s.endW; });
-            let splitW = maxW > 40 ? 30 : Math.floor((minW + maxW) / 2);
-            document.getElementById('tkbPreviewBody').innerHTML = `<div class="tkb-container">${renderPhaseBox(1, `GIAI ĐOẠN 1 (Tuần ${minW}-${splitW})`, "ph1", 1, splitW)}${renderPhaseBox(2, `GIAI ĐOẠN 2 (Tuần ${splitW + 1}-${maxW})`, "ph2", splitW + 1, maxW)}</div>`;
-            document.getElementById('tkbModal').style.display = 'flex';
+        function generateTKB() {
+            if (mySchedule.length === 0) return alert("Chưa có môn!");
+            const content = document.getElementById('tkbContent');
+            content.innerHTML = `${renderBox("GIAI ĐOẠN 1 (Tuần 21-30)", "#f97316", 21, 30)}${renderBox("GIAI ĐOẠN 2 (Tuần 31-40)", "#3b82f6", 31, 40)}`;
+            openModal('tkbModal');
         }
 
-        function renderPhaseBox(phaseId, title, headerClass, startW, endW) {
-            let html = `<div class="tkb-phase-box"><div class="tkb-phase-header ${headerClass}">${title}</div><div class="tkb-table-wrap"><table class="tkb-table"><thead><tr><th width="40">CA</th><th>HAI</th><th>BA</th><th>TƯ</th><th>NĂM</th><th>SÁU</th><th>BẢY</th><th>CN</th></tr></thead><tbody>`;
-            const shifts = [{ n: "Sáng", s: 0, e: 720 }, { n: "Chiều", s: 720, e: 1020 }, { n: "Tối", s: 1020, e: 1440 }];
-            shifts.forEach(shift => {
-                html += `<tr><td class="tkb-shift-cell">${shift.n}</td>`;
+        function renderBox(title, color, sW, eW) {
+            const days = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
+            let html = `<div class="tkb-box"><div class="tkb-head" style="background:${color}">${title}</div><table class="tkb-table"><thead><tr><th width="35">Ca</th>${days.map(d => `<th>${d}</th>`).join('')}</tr></thead><tbody>`;
+            ["Sáng", "Chiều", "Tối"].forEach(ca => {
+                html += `<tr><td style="background:#f8fafc; text-align:center; font-weight:bold;">${ca}</td>`;
                 for (let d = 2; d <= 8; d++) {
-                    let items = scheduleData.filter(s => parseInt(s.day) === d && s.sMin >= shift.s && s.sMin < shift.e && (phaseId === 1 ? s.startW <= endW : s.endW >= startW));
-                    html += `<td>${items.map(it => `<div class="tkb-card"><b>${it.code}</b><div>${it.name}</div><div>⏰ ${it.startT}-${it.endT}</div><div class="tkb-card-loc">📍 ${it.location}</div></div>`).join('')}</td>`;
+                    let dStr = d === 8 ? "CN" : "T" + d;
+                    let items = [];
+                    mySchedule.forEach(sub => {
+                        sub.sessions.forEach(ss => {
+                            let hour = parseInt(ss.start.split(':')[0]);
+                            let isCa = (ca === "Sáng" && hour < 12) || (ca === "Chiều" && hour >= 12 && hour < 17) || (ca === "Tối" && hour >= 17);
+                            if (ss.day === dStr && isCa) items.push({ code: sub.classCode, time: ss.time, loc: ss.loc });
+                        });
+                    });
+                    html += `<td>${items.map(i => `<div class="tkb-card"><b>${i.code}</b><br>${i.time}<br><small>📍 ${i.loc}</small></div>`).join('')}</td>`;
                 }
                 html += `</tr>`;
             });
-            return html + `</tbody></table></div></div>`;
+            return html + `</tbody></table></div>`;
         }
 
-        function toggleCustom(sel, id) { document.getElementById(id).style.display = (sel.value === 'custom') ? 'block' : 'none'; }
-        function showAlert(m, t) { document.getElementById('alertIcon').innerText = t === 'error' ? '😣' : '🎉'; document.getElementById('alertMsg').innerHTML = m; document.getElementById('alertModal').style.display = 'flex'; }
+        function snapTable() { snapElement('mainTableArea'); }
         function snapElement(id) {
-            const target = document.getElementById(id);
-            html2canvas(target, { scale: 1.5 }).then(c => {
-                c.toBlob(b => navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).then(() => showAlert("Đã copy ảnh!", "success")));
-            });
-        }
-        function exportData() { let a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scheduleData)); a.download = "LichHoc.json"; a.click(); }
-        function importData(i) { let f = i.files[0]; if (f) { let r = new FileReader(); r.onload = e => { scheduleData = JSON.parse(e.target.result); renderTable(); showAlert("Đã tải dữ liệu!", "success"); }; r.readAsText(f); } }
-        function snapFullTable() {
-            const table = document.querySelector('#captureArea table');
-            if (!table || scheduleData.length === 0) {
-                return showAlert("Bảng trống, không có gì để chụp!", "error");
-            }
-
-            const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-            btn.style.pointerEvents = 'none';
-
-            // 1. Tạo bản sao (clone) của bảng để xử lý lỗi render
-            const cloneTable = table.cloneNode(true);
-
-            // 2. Cấu hình bản sao để html2canvas đọc chính xác (bỏ sticky, bỏ scroll)
-            cloneTable.style.position = 'absolute';
-            cloneTable.style.top = '-9999px'; // Đẩy ra khỏi vùng nhìn thấy
-            cloneTable.style.left = '-9999px';
-            cloneTable.style.width = table.offsetWidth + 'px';
-
-            // Loại bỏ thuộc tính 'sticky' ở các thẻ th trong bản sao
-            cloneTable.querySelectorAll('th').forEach(th => {
-                th.style.position = 'static';
-            });
-
-            document.body.appendChild(cloneTable);
-
-            // 3. Tiến hành chụp bản sao
-            html2canvas(cloneTable, {
-                scale: 2, // Ảnh nét gấp đôi
-                useCORS: true,
-                backgroundColor: "#ffffff",
-                logging: false
-            }).then(canvas => {
+            html2canvas(document.getElementById(id)).then(canvas => {
                 canvas.toBlob(blob => {
-                    const item = new ClipboardItem({ "image/png": blob });
-                    navigator.clipboard.write([item]).then(() => {
-                        showAlert("Đã sửa lỗi render và copy ảnh thành công!", "success");
-                        btn.innerHTML = originalText;
-                        btn.style.pointerEvents = 'auto';
-                    });
-                }, 'image/png');
-
-                // 4. Dọn dẹp bản sao sau khi chụp xong
-                document.body.removeChild(cloneTable);
-            }).catch(err => {
-                console.error(err);
-                if (document.body.contains(cloneTable)) document.body.removeChild(cloneTable);
-                showAlert("Lỗi khi xử lý ảnh!", "error");
-                btn.innerHTML = originalText;
-                btn.style.pointerEvents = 'auto';
+                    navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+                    alert("Đã copy ảnh!");
+                });
             });
         }
     </script>
