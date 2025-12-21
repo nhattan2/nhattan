@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sắp Xếp Lịch Tín Chỉ</title>
+    <title>Sắp Xếp Lịch Tín Chỉ - Bản Full Option</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -77,6 +77,14 @@
             font-weight: bold;
         }
 
+        .phase-stat {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: white;
+        }
+
         .btn-tool {
             padding: 8px 14px;
             border: none;
@@ -132,6 +140,10 @@
             padding: 10px;
             border-bottom: 1px solid #e2e8f0;
             font-size: 0.85rem;
+        }
+
+        .row-warning {
+            background-color: #fff1f2 !important;
         }
 
         .modal-overlay {
@@ -266,16 +278,19 @@
 </head>
 
 <body>
-
     <header>
         <h1>Sắp Xếp Lịch Tín Chỉ</h1>
     </header>
 
     <div class="app-container">
         <div class="toolbar">
-            <div style="font-weight:700;">Tổng: <span class="total-badge" id="totalCredits">0</span> TC</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="font-weight:700;">Tổng: <span class="total-badge" id="totalCredits">0</span> TC</div>
+                <div class="phase-stat" style="background: #f97316;">GD1: <span id="statGD1">0</span> buổi</div>
+                <div class="phase-stat" style="background: #3b82f6;">GD2: <span id="statGD2">0</span> buổi</div>
+            </div>
             <div style="display:flex; gap:8px;">
-                <button class="btn-tool" style="background:#059669;" onclick="openModal('lookupModal')"><i
+                <button class="btn-tool" style="background:#059669;" onclick="openLookupModal()"><i
                         class="fas fa-search"></i> Chọn môn</button>
                 <button class="btn-tool" style="background:#f59e0b;" onclick="generateTKB()"><i
                         class="far fa-calendar-alt"></i> TKB</button>
@@ -321,7 +336,7 @@
     <div id="lookupModal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <h3 style="margin:0;"><i class="fas fa-search"></i> Tra cứu môn học</h3>
+                <h3 style="margin:0;"><i class="fas fa-search"></i> Tra cứu (Ưu tiên: GĐ ít buổi > Chỗ ít)</h3>
                 <button onclick="closeModal('lookupModal')"
                     style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
             </div>
@@ -395,6 +410,35 @@
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+        function openLookupModal() {
+            document.getElementById('lookupTableBody').innerHTML = '';
+            openModal('lookupModal');
+        }
+
+        function getCourseIdentity(classCode) {
+            const match = classCode.match(/^(.+?)\s([A-Z]+)(\d*)$/);
+            if (!match) return { base: classCode, type: 'LT' };
+            return {
+                base: match[1].trim(),
+                type: match[3] === "" ? "LT" : "TH"
+            };
+        }
+
+        function getPhase(weeksStr) {
+            const startWeek = parseInt(weeksStr.split('-')[0]);
+            return (startWeek <= 30) ? 1 : 2;
+        }
+
+        function countSessions() {
+            let gd1 = 0, gd2 = 0;
+            mySchedule.forEach(sub => {
+                const p = getPhase(sub.weeks);
+                if (p === 1) gd1 += sub.sessions.length;
+                else gd2 += sub.sessions.length;
+            });
+            return { gd1, gd2 };
+        }
+
         async function handlePaste() {
             try {
                 const text = await navigator.clipboard.readText();
@@ -404,7 +448,7 @@
             } catch (e) { alert("Vui lòng cho phép quyền truy cập Clipboard!"); }
         }
 
-        // --- ĐÂY LÀ PHẦN ĐÃ SỬA LỖI GIẢNG VIÊN ---
+        // --- GIỮ NGUYÊN PARSE DATA GỐC CỦA BẠN (CÓ CHỖ) ---
         function parseData(raw) {
             const results = [];
             let subjectNameHeader = "Môn học";
@@ -429,31 +473,19 @@
                 let seat = (block.match(/(LEC|LAB|WOR|DEM)\s+(\d+)/) || [0, 0, 0])[2];
                 let weeks = (block.match(/(\d+)--(\d+)/) || [0, 33, 40]);
 
-                // SỬA LỖI TẠI ĐÂY: Tách linh hoạt theo dòng hoặc khoảng trắng dài (Tab)
                 let teacher = "Chưa rõ";
                 let parts = block.split(/\n|\t|\s{3,}/).map(p => p.trim()).filter(p => p.length > 5);
-
-                // Trạng thái thường gặp để nhận biết điểm kết thúc của tên giảng viên
                 const statusList = ["CÒN HẠN", "HẾT HẠN", "LỚP HỌC", "ĐÃ ĐĂNG KÝ"];
 
                 for (let p of parts) {
-                    // Tên giảng viên: In hoa toàn bộ, không chứa số, không phải từ khóa hệ thống
-                    if (p === p.toUpperCase() &&
-                        !/\d/.test(p) &&
-                        !p.includes("ĐỊA ĐIỂM") &&
-                        !p.includes("LEC") &&
-                        !p.includes("ONLINE") &&
-                        !statusList.some(status => p.includes(status)) &&
-                        p.split(' ').length >= 2) {
-                        teacher = p;
-                        break;
+                    if (p === p.toUpperCase() && !/\d/.test(p) && !p.includes("ĐỊA ĐIỂM") && !p.includes("LEC") && !p.includes("ONLINE") && !statusList.some(status => p.includes(status)) && p.split(' ').length >= 2) {
+                        teacher = p; break;
                     }
                 }
 
                 const timeRegex = /(T\d|CN)[\s:]*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/g;
                 let sessions = [];
                 let tMatches = [...block.matchAll(timeRegex)];
-
                 let lastTimeIdx = tMatches.length > 0 ? tMatches[tMatches.length - 1].index : 0;
                 let foundLocs = [];
                 Object.keys(locMap).forEach(key => {
@@ -478,20 +510,61 @@
             return results;
         }
 
+        // --- CẬP NHẬT RENDER LOOKUP: ƯU TIÊN GĐ RẢNH + CHỖ ÍT ---
         function renderLookup(data) {
+            const stats = countSessions();
+            const existingIdents = mySchedule.map(s => {
+                const id = getCourseIdentity(s.classCode);
+                return `${id.base}|${id.type}`;
+            });
+
+            let filtered = data.filter(item => {
+                const id = getCourseIdentity(item.classCode);
+                return !existingIdents.includes(`${id.base}|${id.type}`);
+            });
+
+            if (data.length > filtered.length) {
+                alert(`Đã lọc bỏ ${data.length - filtered.length} mã lớp vì môn đó đã có trong TKB rồi!`);
+            }
+
+            // Thuật toán sắp xếp đa tầng:
+            filtered.sort((a, b) => {
+                const pA = getPhase(a.weeks);
+                const pB = getPhase(b.weeks);
+                const loadA = (pA === 1) ? stats.gd1 : stats.gd2;
+                const loadB = (pB === 1) ? stats.gd1 : stats.gd2;
+
+                // Tầng 1: Ưu tiên Giai đoạn rảnh hơn
+                if (loadA !== loadB) {
+                    return loadA - loadB;
+                }
+
+                // Tầng 2: Nếu rảnh như nhau, ưu tiên môn có số chỗ ÍT hơn (Cần đăng ký ngay)
+                return parseInt(a.seat) - parseInt(b.seat);
+            });
+
             const body = document.getElementById('lookupTableBody');
-            body.innerHTML = data.map((item, idx) => `
-                <tr>
+            body.innerHTML = filtered.map(item => {
+                const p = getPhase(item.weeks);
+                const load = (p === 1) ? stats.gd1 : stats.gd2;
+                const isHeavy = load >= 10;
+                const isUrgent = parseInt(item.seat) <= 5; // Cảnh báo nếu chỗ <= 5
+
+                return `
+                <tr class="${isHeavy ? 'row-warning' : ''}">
                     <td>${item.regCode}</td>
                     <td style="color:#be123c; font-weight:bold;">${item.classCode}</td>
-                    <td>${item.name}</td>
-                    <td>${item.seat}</td>
+                    <td>${item.name} ${isHeavy ? '<br><small style="color:red; font-weight:bold;">⚠️ GD' + p + ' DÀY (' + load + ' buổi)</small>' : ''}</td>
+                    <td style="${isUrgent ? 'color:red; font-weight:bold;' : ''}">
+                        ${item.seat} 
+                        ${isUrgent ? '<br><small>🔥 SẮP HẾT!</small>' : ''}
+                    </td>
                     <td>${item.weeks}</td>
                     <td>${item.sessions.map(s => `<div>${s.day}: ${s.time} (${s.loc})</div>`).join('')}</td>
                     <td style="font-weight:500; color:#0369a1;">${item.teacher}</td>
                     <td><button class="btn-tool" style="background:#059669;" onclick="prepareAdd(${JSON.stringify(item).replace(/"/g, '&quot;')})">Chọn</button></td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         function prepareAdd(item) {
@@ -502,6 +575,20 @@
 
         function addSubject() {
             const tc = document.getElementById('creditInput').value;
+            const id = getCourseIdentity(tempSubject.classCode);
+            const key = `${id.base}|${id.type}`;
+
+            const isDuplicate = mySchedule.some(s => {
+                const sId = getCourseIdentity(s.classCode);
+                return `${sId.base}|${sId.type}` === key;
+            });
+
+            if (isDuplicate) {
+                alert(`LỖI: Môn ${id.base} (${id.type === 'LT' ? 'Lý thuyết' : 'Thực hành'}) này đã có trong TKB rồi!`);
+                closeModal('creditModal');
+                return;
+            }
+
             mySchedule.push({ ...tempSubject, credits: parseInt(tc), id: Date.now() });
             closeModal('creditModal'); closeModal('lookupModal');
             renderMainTable();
@@ -509,16 +596,20 @@
 
         function renderMainTable() {
             const body = document.getElementById('mainTableBody');
+            const stats = countSessions();
+            document.getElementById('statGD1').innerText = stats.gd1;
+            document.getElementById('statGD2').innerText = stats.gd2;
+            document.getElementById('totalCredits').innerText = mySchedule.reduce((sum, i) => sum + i.credits, 0);
+
             if (mySchedule.length === 0) {
-                body.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:50px;">Trống.</td></tr>';
-                document.getElementById('totalCredits').innerText = 0;
+                body.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:50px; color:#94a3b8;">Trống.</td></tr>';
                 return;
             }
             body.innerHTML = mySchedule.map(item => `
                 <tr>
                     <td style="font-family:monospace;">${item.regCode}</td>
                     <td style="font-weight:bold; color:#be123c;">${item.classCode}</td>
-                    <td style="font-weight:600;">${item.name}<br><small>${item.credits} TC</small></td>
+                    <td style="font-weight:600;">${item.name}<br><small>${item.credits} TC (GD${getPhase(item.weeks)})</small></td>
                     <td>${item.weeks}</td>
                     <td>${item.sessions.map(s => `<div>${s.day} ${s.time}</div>`).join('')}</td>
                     <td>${item.sessions.map(s => `<div>📍 ${s.loc}</div>`).join('')}</td>
@@ -526,38 +617,13 @@
                     <td><button style="border:none; color:#ef4444; background:none; cursor:pointer;" onclick="removeSub(${item.id})"><i class="fas fa-trash"></i></button></td>
                 </tr>
             `).join('');
-            document.getElementById('totalCredits').innerText = mySchedule.reduce((sum, i) => sum + i.credits, 0);
         }
 
         function removeSub(id) { mySchedule = mySchedule.filter(i => i.id !== id); renderMainTable(); }
         function clearAll() { if (confirm("Xóa hết?")) { mySchedule = []; renderMainTable(); } }
-
-        function exportData() {
-            if (mySchedule.length === 0) return alert("Trống!");
-            const blob = new Blob([JSON.stringify(mySchedule)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = "LichHoc.json"; a.click();
-        }
-
-        function importData(input) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    mySchedule = JSON.parse(e.target.result);
-                    renderMainTable(); alert("Đã mở file!");
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        function generateTKB() {
-            if (mySchedule.length === 0) return alert("Chưa có môn!");
-            const content = document.getElementById('tkbContent');
-            content.innerHTML = `${renderBox("GIAI ĐOẠN 1 (Tuần 21-30)", "#f97316", 21, 30)}${renderBox("GIAI ĐOẠN 2 (Tuần 31-40)", "#3b82f6", 31, 40)}`;
-            openModal('tkbModal');
-        }
+        function exportData() { if (mySchedule.length === 0) return alert("Trống!"); const blob = new Blob([JSON.stringify(mySchedule)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "LichHoc.json"; a.click(); }
+        function importData(input) { const file = input.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { mySchedule = JSON.parse(e.target.result); renderMainTable(); }; reader.readAsText(file); } }
+        function generateTKB() { if (mySchedule.length === 0) return alert("Chưa có môn!"); const content = document.getElementById('tkbContent'); content.innerHTML = `${renderBox("GIAI ĐOẠN 1 (Tuần 21-30)", "#f97316", 21, 30)}${renderBox("GIAI ĐOẠN 2 (Tuần 31-40)", "#3b82f6", 31, 40)}`; openModal('tkbModal'); }
 
         function renderBox(title, color, sW, eW) {
             const days = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
@@ -568,11 +634,13 @@
                     let dStr = d === 8 ? "CN" : "T" + d;
                     let items = [];
                     mySchedule.forEach(sub => {
-                        sub.sessions.forEach(ss => {
-                            let hour = parseInt(ss.start.split(':')[0]);
-                            let isCa = (ca === "Sáng" && hour < 12) || (ca === "Chiều" && hour >= 12 && hour < 17) || (ca === "Tối" && hour >= 17);
-                            if (ss.day === dStr && isCa) items.push({ code: sub.classCode, time: ss.time, loc: ss.loc });
-                        });
+                        if ((getPhase(sub.weeks) === 1 && sW === 21) || (getPhase(sub.weeks) === 2 && sW === 31)) {
+                            sub.sessions.forEach(ss => {
+                                let hour = parseInt(ss.start.split(':')[0]);
+                                let isCa = (ca === "Sáng" && hour < 12) || (ca === "Chiều" && hour >= 12 && hour < 17) || (ca === "Tối" && hour >= 17);
+                                if (ss.day === dStr && isCa) items.push({ code: sub.classCode, time: ss.time, loc: ss.loc });
+                            });
+                        }
                     });
                     html += `<td>${items.map(i => `<div class="tkb-card"><b>${i.code}</b><br>${i.time}<br><small>📍 ${i.loc}</small></div>`).join('')}</td>`;
                 }
@@ -582,14 +650,7 @@
         }
 
         function snapTable() { snapElement('mainTableArea'); }
-        function snapElement(id) {
-            html2canvas(document.getElementById(id)).then(canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-                    alert("Đã copy ảnh!");
-                });
-            });
-        }
+        function snapElement(id) { html2canvas(document.getElementById(id)).then(canvas => { canvas.toBlob(blob => { navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); alert("Đã copy ảnh!"); }); }); }
     </script>
 </body>
 
