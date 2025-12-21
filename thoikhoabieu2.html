@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thời Khóa Biểu Đăng Ký Tín Chỉ</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tabs {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button {
+            background-color: transparent;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tab-button.active {
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .page {
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .input-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .input-row label {
+            font-weight: bold;
+            margin-right: 10px;
+            width: 120px;
+            color: #333;
+        }
+
+        .input-row input,
+        .input-row select {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-right: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .input-row input:focus,
+        .input-row select:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+
+        #campus-location-field,
+        .campus-location-field {
+            display: flex;
+            flex-grow: 1;
+            align-items: center;
+        }
+
+        #campus-location-field label,
+        .campus-location-field label {
+            width: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .file-action-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .add-course-btn {
+            background-color: #87f765;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .add-session-btn {
+            background-color: #e87070;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .add-course-btn:hover,
+        .add-session-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .file-action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .export-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .export-btn:hover {
+            background-color: #f57c00;
+            transform: translateY(-2px);
+        }
+
+        .import-btn {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .import-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .clear-all-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .clear-all-btn:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .custom-file-upload input[type="file"] {
+            display: none;
+        }
+
+        .timetable-switch-buttons {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .timetable-button {
+            background-color: #ddd;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin: 0 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .timetable-button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Updated style for sticky header */
+        .timetable-display {
+            overflow-x: auto;
+            overflow-y: auto;
+            /* Enable vertical scrolling */
+            max-height: 500px;
+            /* Set a max height to make it scrollable */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed;
+        }
+
+        /* Sticky header styles */
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+            word-wrap: break-word;
+            vertical-align: top;
+            height: 40px;
+        }
+
+        th {
+            background-color: #d8f5d8;
+            font-weight: bold;
+            position: sticky;
+            /* Make the header sticky */
+            top: 0;
+            /* Stick to the top of the container */
+            z-index: 10;
+            /* Ensure it stays on top of other content */
+        }
+
+        td.time-label {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
+        .online-class {
+            background-color: #e0f2f1;
+            border-left: 5px solid #009688;
+        }
+
+        .campus-class {
+            background-color: #fffde7;
+            border-left: 5px solid #ffc107;
+        }
+
+        .danger {
+            background-color: #ffebee !important;
+            color: #c62828 !important;
+        }
+
+        .remove-btn,
+        .remove-session-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            margin-left: 5px;
+        }
+
+        .remove-btn:hover,
+        .remove-session-btn:hover {
+            background-color: #c82333;
+        }
+
+        .course-summary {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            font-size: 1.1em;
+        }
+
+        .course-summary p {
+            margin: 5px 0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 5px;
+        }
+
+        /* Custom Alert Styles */
+        .alert-container {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alert-box {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            /* DÒNG NÀY CĂN GIỮA ICON VÀ NÚT OK */
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border-left: 5px solid #dc3545;
+            /* Mặc định màu đỏ cho alert-box lỗi */
+        }
+
+        .alert-box.success {
+            border-left: 5px solid #28a745;
+        }
+
+        .alert-icon {
+            font-size: 40px;
+            /* CĂN GIỮA ICON BẰNG MARGIN VÀ WIDTH */
+            margin: 0 auto 10px auto;
+            display: block;
+            width: fit-content;
+        }
+
+        .alert-icon.success::after {
+            content: '👍';
+        }
+
+        .alert-icon.error::after {
+            content: '⚠️';
+        }
+
+        /* TIÊU ĐỀ */
+        .alert-box .alert-title {
+            font-size: 1.6em;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+            color: #dc3545;
+            /* Màu đỏ cho tiêu đề */
+            text-align: center;
+            /* CĂN GIỮA TIÊU ĐỀ */
+        }
+
+        /* NỘI DUNG CHUNG (CHỨA CẢ MESSAGE VÀ DETAIL) */
+        #alert-message {
+            font-size: 1.0em;
+            font-weight: normal;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: left;
+            /* CĂN TRÁI NỘI DUNG */
+            display: block;
+        }
+
+        /* KHỐI HIỂN THỊ CHI TIẾT LỖI (CONFLICT DETAIL) */
+        .alert-box .conflict-detail {
+            background-color: #f8d7da;
+            /* Nền hồng nhạt */
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: left;
+            color: #a71d2a;
+        }
+
+        .alert-box .conflict-detail b {
+            font-size: 1.1em;
+        }
+
+        /* NÚT OK */
+        #alert-ok-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            /* Nút đã được căn giữa bởi text-align: center của .alert-box */
+        }
+
+        #alert-ok-btn:hover {
+            background-color: #388e3c;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ... (Giữ nguyên các quy tắc về form, bảng, v.v.) ... */
+        .input-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .input-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .input-row input,
+        .input-row select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .form-columns {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .form-column {
+            flex: none;
+            width: 100%;
+        }
+
+        h2,
+        h3 {
+            text-align: center;
+            color: #444;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="showPage('page1')">Nhập Môn Học</button>
+        <button class="tab-button" onclick="showPage('page2')">Thời Khóa Biểu</button>
+        <button class="tab-button" onclick="showPage('page3')">Môn Đã Đăng Ký</button>
+        <button class="tab-button" onclick="showPage('page4')">Học Phí</button>
+    </div>
+
+    <div class="container">
+        <div id="page1" class="page">
+            <h2>Nhập thông tin môn học</h2>
+            <form id="course-form" autocomplete="off">
+
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="course-name">Tên môn học:</label>
+                        <input type="text" id="course-name" required autocomplete="off"
+                            placeholder="VD: Triết Học Marx - Lenin">
+                    </div>
+                    <div class="input-group">
+                        <label for="class-code">Mã lớp:</label>
+                        <input type="text" id="class-code" required autocomplete="off" placeholder="VD: L01">
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="reg-code">Mã đăng ký:</label>
+                        <input type="text" id="reg-code" required autocomplete="off" placeholder="VD: 12345678">
+                    </div>
+                    <div class="input-group">
+                        <label for="semester-week">Tuần học (GĐ):</label>
+                        <select id="semester-week" required>
+                            <option value="">-- Chọn --</option>
+                            <option value="Giai đoạn 1">Giai đoạn 1</option>
+                            <option value="Giai đoạn 2">Giai đoạn 2</option>
+                            <option value="Cả 2 giai đoạn">Cả 2 giai đoạn</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="lecturer">Giảng viên:</label>
+                        <input type="text" id="lecturer" required autocomplete="off" placeholder="VD: Nguyễn Văn A">
+                    </div>
+                    <div class="input-group">
+                        <label for="credits">Số tín chỉ:</label>
+                        <select id="credits" required>
+                            <option value="">-- Chọn --</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3>Thời gian học</h3>
+                <div id="class-sessions-container">
+                    <div class="class-session-row">
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="day-of-week-0">Thứ:</label>
+                                <select id="day-of-week-0" class="day-of-week" required>
+                                    <option value="">-- Chọn --</option>
+                                    <option value="T2">T2</option>
+                                    <option value="T3">T3</option>
+                                    <option value="T4">T4</option>
+                                    <option value="T5">T5</option>
+                                    <option value="T6">T6</option>
+                                    <option value="T7">T7</option>
+                                    <option value="CN">CN</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="time-0">Giờ học:</label>
+                                <select id="time-0" class="time" required>
+                                    <option value="">-- Chọn --</option>
+                                    <option value="07:00-09:00">07:00 - 09:00</option>
+                                    <option value="07:00-10:15">07:00 - 10:15</option>
+                                    <option value="07:00-11:15">07:00 - 11:15</option>
+                                    <option value="09:15-11:15">09:15 - 11:15</option>
+                                    <option value="13:00-15:00">13:00 - 15:00</option>
+                                    <option value="13:00-16:15">13:00 - 16:15</option>
+                                    <option value="13:00-17:15">13:00 - 17:15</option>
+                                    <option value="15:15-17:15">15:15 - 17:15</option>
+                                    <option value="17:45-21:00">17:45 - 21:00</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label for="location-type-0">Loại địa điểm:</label>
+                            <select id="location-type-0" class="location-type" required>
+                                <option value="">-- Chọn --</option>
+                                <option value="online">Online</option>
+                                <option value="campus">Cơ sở</option>
+                            </select>
+                            <div class="campus-location-field" style="display:none;">
+                                <label for="location-0">Địa điểm:</label>
+                                <select id="location-0" class="location" required>
+                                    <option value="">-- Chọn địa điểm --</option>
+                                    <option value="Hòa Khánh Nam">Hòa Khánh Nam</option>
+                                    <option value="209 Phan Thanh">209 Phan Thanh</option>
+                                    <option value="K7/25 Quang Trung">K7/25 Quang Trung</option>
+                                    <option value="254 Nguyễn Văn Linh">254 Nguyễn Văn Linh</option>
+                                    <option value="78A Phan Văn Trị">78A Phan Văn Trị</option>
+                                    <option value="137 Nguyễn Văn Linh">137 Nguyễn Văn Linh</option>
+                                    <option value="03 Quang Trung">03 Quang Trung</option>
+                                </select>
+                            </div>
+                            <button type="button" class="remove-session-btn" style="display:none;">Xóa</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="add-session-btn">Thêm giờ học</button>
+                    <button type="submit" class="add-course-btn">Thêm Môn Học</button>
+                </div>
+
+            </form>
+        </div>
+
+        <div id="page2" class="page" style="display:none;">
+            <h2>Thời Khóa Biểu</h2>
+            <div class="timetable-switch-buttons">
+                <button class="timetable-button active" onclick="showTimetable('1')">Giai đoạn 1</button>
+                <button class="timetable-button" onclick="showTimetable('2')">Giai đoạn 2</button>
+            </div>
+
+            <div class="timetable-display" id="timetable-gd1">
+                <table id="table-gd1">
+                    <thead>
+                        <tr>
+                            <th>Giờ</th>
+                            <th>T2</th>
+                            <th>T3</th>
+                            <th>T4</th>
+                            <th>T5</th>
+                            <th>T6</th>
+                            <th>T7</th>
+                            <th>CN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="timetable-display" id="timetable-gd2" style="display:none;">
+                <table id="table-gd2">
+                    <thead>
+                        <tr>
+                            <th>Giờ</th>
+                            <th>T2</th>
+                            <th>T3</th>
+                            <th>T4</th>
+                            <th>T5</th>
+                            <th>T6</th>
+                            <th>T7</th>
+                            <th>CN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="page3" class="page" style="display:none;">
+            <h2>Môn Học Đã Đăng Ký</h2>
+            <div class="course-summary">
+                <p>Tổng số tín chỉ đã đăng ký: <strong id="total-credits">0</strong></p>
+            </div>
+            <div class="course-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên môn học</th>
+                            <th>Mã lớp</th>
+                            <th>Mã ĐK</th>
+                            <th>GĐ</th>
+                            <th>TC</th>
+                            <th>Giảng viên</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="registered-courses-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="page4" class="page" style="display:none;">
+            <h2>Quản lý Học Phí và Dữ liệu</h2>
+            <p>
+                <label for="fee-per-credit">Học phí (16 tín chỉ):</label>
+                <input type="text" id="fee-per-credit" placeholder="Nhập học phí 16 tín chỉ"
+                    oninput="calculateTuitionFee()">
+            </p>
+            <p><strong>Chọn chương trình:</strong></p>
+            <div class="checkbox-group">
+                <label><input type="radio" name="program-type" value="normal" checked onchange="calculateTuitionFee()">
+                    Chương trình thông thường</label>
+                <label><input type="radio" name="program-type" value="advanced" onchange="calculateTuitionFee()"> Chương
+                    trình Tiên tiến quốc tế</label>
+            </div>
+            <p><strong>Tổng học phí tạm tính:</strong> <span id="total-tuition-fee">0 VNĐ</span></p>
+            <div class="file-actions">
+                <button type="button" class="file-action-btn clear-all-btn" onclick="clearAllCourses()">Xóa tất cả
+                    môn</button>
+                <button type="button" class="file-action-btn export-btn" onclick="exportData()">Xuất File</button>
+                <button type="button" class="file-action-btn import-btn" onclick="redirectToPage()">Giải mã
+                    JSON</button>
+                <label class="file-action-btn import-btn custom-file-upload">
+                    <input type="file" id="import-file-page4" accept=".json" onchange="loadData(event)" />
+                    Tải File
+                </label>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-alert" class="alert-container">
+        <div class="alert-box">
+            <span id="alert-icon" class="alert-icon"></span>
+            <span id="alert-title" class="alert-title"></span>
+            <div id="alert-message"></div>
+            <button id="alert-ok-btn">OK</button>
+        </div>
+    </div>
+    <script>
+        // Function để vô hiệu hóa F12 và các phím tắt khác của DevTools
+        function disableDevTools() {
+            document.addEventListener('keydown', (e) => {
+                if (
+                    e.key === 'F12' ||
+                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+                    (e.ctrlKey && e.key === 'U')
+                ) {
+                    e.preventDefault();
+                    console.log('Developer Tools are disabled.');
+                }
+            });
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+            const threshold = 160;
+            let devToolsOpen = false;
+            window.addEventListener('resize', () => {
+                if (
+                    window.outerWidth - window.innerWidth > threshold ||
+                    window.outerHeight - window.innerHeight > threshold
+                ) {
+                    if (!devToolsOpen) {
+                        devToolsOpen = true;
+                        console.log('DevTools have been detected and an action has been taken.');
+                    }
+                } else {
+                    devToolsOpen = false;
+                }
+            });
+        }
+        disableDevTools();
+
+        // CẬP NHẬT HÀM showAlert (4 tham số)
+        function showAlert(title, message, type, details = '') {
+            const alertContainer = document.getElementById('custom-alert');
+            const alertBox = alertContainer.querySelector('.alert-box');
+            const alertIcon = document.getElementById('alert-icon');
+            const alertTitle = document.getElementById('alert-title');
+            const alertMessage = document.getElementById('alert-message');
+            const alertOkBtn = document.getElementById('alert-ok-btn');
+
+            alertTitle.textContent = title;
+
+            // Nếu là lỗi trùng lịch, message là đoạn văn bản đầu tiên
+            if (type === 'error' && details) {
+                alertMessage.innerHTML = `<p>${message}</p><div class="conflict-detail">${details}</div>`;
+            } else {
+                // Đối với thông báo thông thường (success/lỗi khác)
+                alertMessage.innerHTML = `<p style="text-align:center; font-weight:bold;">${message}</p>`;
+            }
+
+
+            alertBox.className = `alert-box ${type}`;
+            alertIcon.className = `alert-icon ${type}`;
+            alertContainer.style.display = 'flex';
+
+            alertOkBtn.onclick = function () {
+                alertContainer.style.display = 'none';
+            };
+        }
+
+        // Chuyển đổi giữa các trang
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.style.display = 'none';
+            });
+            document.getElementById(pageId).style.display = 'block';
+
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`button[onclick="showPage('${pageId}')"]`).classList.add('active');
+
+            if (pageId === 'page2') {
+                renderTimetable();
+                showTimetable('1');
+            }
+            if (pageId === 'page3') {
+                updateRegisteredCoursesList();
+            }
+            if (pageId === 'page4') {
+                calculateTuitionFee();
+            }
+        }
+
+        // Chuyển đổi giữa các thời khóa biểu Giai đoạn 1 và 2
+        function showTimetable(semester) {
+            document.getElementById('timetable-gd1').style.display = 'none';
+            document.getElementById('timetable-gd2').style.display = 'none';
+            document.getElementById(`timetable-gd${semester}`).style.display = 'block';
+
+            document.querySelectorAll('.timetable-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`button[onclick="showTimetable('${semester}')"]`).classList.add('active');
+        }
+
+        // Global data and state variables
+        let registeredCourses = [];
+        let tuitionFeeData = {
+            feePer16Credits: 0,
+            programType: 'normal'
+        };
+        let sessionCounter = 1;
+
+        // Tìm đến đoạn mã xử lý sự kiện click của nút "Thêm giờ học"
+        document.querySelector('.add-session-btn').addEventListener('click', () => {
+            const container = document.getElementById('class-sessions-container');
+            const newSession = document.createElement('div');
+            newSession.className = 'class-session-row';
+            newSession.innerHTML = `
+        <div class="input-row">
+            <div class="input-group">
+                <label for="day-of-week-${sessionCounter}">Thứ:</label>
+                <select id="day-of-week-${sessionCounter}" class="day-of-week" required>
+                    <option value="">-- Chọn --</option>
+                    <option value="T2">T2</option>
+                    <option value="T3">T3</option>
+                    <option value="T4">T4</option>
+                    <option value="T5">T5</option>
+                    <option value="T6">T6</option>
+                    <option value="T7">T7</option>
+                    <option value="CN">CN</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="time-${sessionCounter}">Giờ học:</label>
+                <select id="time-${sessionCounter}" class="time" required>
+                    <option value="">-- Chọn --</option>
+                    <option value="07:00-09:00">07:00 - 09:00</option>
+                    <option value="07:00-10:15">07:00 - 10:15</option>
+                    <option value="07:00-11:15">07:00 - 11:15</option>
+                    <option value="09:15-11:15">09:15 - 11:15</option>
+                    <option value="13:00-15:00">13:00 - 15:00</option>
+                    <option value="13:00-16:15">13:00 - 16:15</option>
+                    <option value="13:00-17:15">13:00 - 17:15</option>
+                    <option value="15:15-17:15">15:15 - 17:15</option>
+                    <option value="17:45-21:00">17:45 - 21:00</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-row">
+            <label for="location-type-${sessionCounter}">Loại địa điểm:</label>
+            <select id="location-type-${sessionCounter}" class="location-type" required>
+                <option value="">-- Chọn --</option>
+                <option value="online">Online</option>
+                <option value="campus">Cơ sở</option>
+            </select>
+<div class="campus-location-field" style="display:none;">
+    <label for="location-${sessionCounter}">Địa điểm:</label>
+    <select id="location-${sessionCounter}" class="location" required>
+        <option value="">-- Chọn địa điểm --</option>
+        <option value="Hòa Khánh Nam">Hòa Khánh Nam</option>
+        <option value="209 Phan Thanh">209 Phan Thanh</option>
+        <option value="K7/25 Quang Trung">K7/25 Quang Trung</option>
+        <option value="254 Nguyễn Văn Linh">254 Nguyễn Văn Linh</option>
+        <option value="78A Phan Văn Trị">78A Phan Văn Trị</option>
+        <option value="137 Nguyễn Văn Linh">137 Nguyễn Văn Linh</option>
+        <option value="03 Quang Trung">03 Quang Trung</option>
+    </select>
+               </div>
+            <button type="button" class="remove-session-btn">Xóa</button>
+        </div>
+    `;
+            container.appendChild(newSession);
+
+            // Attach event listeners to the new elements
+            newSession.querySelector('.location-type').addEventListener('change', handleLocationTypeChange);
+            newSession.querySelector('.remove-session-btn').addEventListener('click', removeSession);
+
+            // Ensure the first "Xóa" button is shown if there's more than one session
+            document.querySelector('.class-session-row .remove-session-btn').style.display = 'inline-block';
+
+            sessionCounter++;
+        });
+
+        // Xóa một khối nhập liệu giờ học
+        function removeSession(e) {
+            const sessionRow = e.target.closest('.class-session-row');
+            if (document.querySelectorAll('.class-session-row').length > 1) {
+                sessionRow.remove();
+            }
+            // Ẩn nút "Xóa" nếu chỉ còn một khối
+            if (document.querySelectorAll('.class-session-row').length === 1) {
+                document.querySelector('.class-session-row .remove-session-btn').style.display = 'none';
+            }
+        }
+
+        // Xử lý logic hiển thị trường địa điểm
+        function handleLocationTypeChange(event) {
+            const sessionRow = event.target.closest('.class-session-row');
+            const campusField = sessionRow.querySelector('.campus-location-field');
+            const locationInput = sessionRow.querySelector('.location');
+            if (event.target.value === 'campus') {
+                campusField.style.display = 'flex';
+                locationInput.required = true;
+            } else {
+                campusField.style.display = 'none';
+                locationInput.required = false;
+            }
+        }
+        document.querySelectorAll('.location-type').forEach(select => {
+            select.addEventListener('change', handleLocationTypeChange);
+        });
+        document.querySelectorAll('.remove-session-btn').forEach(btn => {
+            btn.addEventListener('click', removeSession);
+        });
+
+        // Chuẩn hóa giá trị "Giai đoạn"
+        function normalizeSemesterWeek(value) {
+            const v = value.trim();
+            if (v === '1' || v.toLowerCase() === 'giai đoạn 1') return 'Giai đoạn 1';
+            if (v === '2' || v.toLowerCase() === 'giai đoạn 2') return 'Giai đoạn 2';
+            if (
+                v === 'Cả 2 giai đoạn' ||
+                v === '1,2' ||
+                v === '2,1' ||
+                v.toLowerCase() === 'cả 2 giai đoạn'
+            ) return 'Cả 2 giai đoạn';
+            return v;
+        }
+
+        // Chuyển đổi thời gian dạng "HH:mm" thành phút
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        // Chuyển đổi nhãn giai đoạn thành mã giai đoạn
+        function getSemestersFromLabel(label) {
+            if (label === 'Giai đoạn 1') {
+                return ['1'];
+            } else if (label === 'Giai đoạn 2') {
+                return ['2'];
+            } else if (label === 'Cả 2 giai đoạn') {
+                return ['1', '2'];
+            }
+            return [];
+        }
+
+        // Render lại toàn bộ thời khóa biểu
+        function renderTimetable() {
+            const tables = {
+                '1': document.getElementById('table-gd1').querySelector('tbody'),
+                '2': document.getElementById('table-gd2').querySelector('tbody')
+            };
+            tables['1'].innerHTML = '';
+            tables['2'].innerHTML = '';
+
+            const daysOfWeek = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+            const timeSlots = [
+                "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
+                "13:00", "14:00", "15:00", "16:00", "17:00", "18:00",
+                "19:00", "20:00", "21:00"
+            ];
+
+            for (const semester of ['1', '2']) {
+                const occupiedCells = new Set();
+
+                // Tạo một mảng flat chứa tất cả các buổi học (sessions)
+                const allSessions = registeredCourses.flatMap(course =>
+                    course.sessions.map(session => ({
+                        ...session,
+                        semesterWeek: course.semesterWeek,
+                        classCode: course.classCode
+                    }))
+                ).filter(session => getSemestersFromLabel(session.semesterWeek).includes(semester));
+
+                for (let i = 0; i < timeSlots.length; i++) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td class="time-label">${timeSlots[i]}</td>`;
+
+                    for (let j = 0; j < daysOfWeek.length; j++) {
+                        const day = daysOfWeek[j];
+                        const cellKey = `${timeSlots[i]}-${day}`;
+
+                        if (occupiedCells.has(cellKey)) {
+                            continue;
+                        }
+
+                        const session = allSessions.find(s => {
+                            const sessionStartHour = s.time.split('-')[0];
+                            return s.dayOfWeek === day && sessionStartHour.substring(0, 2) === timeSlots[i].substring(0, 2);
+                        });
+
+                        if (session) {
+                            const [startTime, endTime] = session.time.split('-');
+                            const startMin = timeToMinutes(startTime);
+                            const endMin = timeToMinutes(endTime);
+                            const durationInHours = (endMin - startMin) / 60;
+                            const rowspan = Math.ceil(durationInHours);
+
+                            for (let k = 0; k < rowspan; k++) {
+                                if (i + k < timeSlots.length) {
+                                    occupiedCells.add(`${timeSlots[i + k]}-${day}`);
+                                }
+                            }
+
+                            const location = session.locationType === 'online' ? 'Online' : session.location;
+                            row.innerHTML += `
+                        <td rowspan="${rowspan}" class="${session.locationType}-class">
+                            <strong>${session.classCode}</strong><br/>
+                            ${location}<br/>
+                            (${session.time})
+                        </td>
+                    `;
+                        } else {
+                            row.innerHTML += `<td></td>`;
+                        }
+                    }
+                    tables[semester].appendChild(row);
+                }
+            }
+        }
+
+        // Xử lý form khi submit
+        document.getElementById('course-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const semesterWeekRaw = document.getElementById('semester-week').value;
+            const semesterWeek = normalizeSemesterWeek(semesterWeekRaw);
+
+            if (!['Giai đoạn 1', 'Giai đoạn 2', 'Cả 2 giai đoạn'].includes(semesterWeek)) {
+                showAlert('LỖI DỮ LIỆU', 'Vui lòng chọn đúng giá trị cho trường "Tuần học".', 'error');
+                return;
+            }
+
+            const sessions = [];
+            let isConflict = false;
+
+            // Lấy dữ liệu từ tất cả các khối giờ học
+            const sessionElements = document.querySelectorAll('.class-session-row');
+            sessionElements.forEach(sessionElement => {
+                const dayOfWeek = sessionElement.querySelector('.day-of-week').value.toUpperCase();
+                const time = sessionElement.querySelector('.time').value;
+                const locationType = sessionElement.querySelector('.location-type').value;
+                const location = (locationType === 'online') ? 'Online' : sessionElement.querySelector('.location').value;
+
+                // Kiểm tra dữ liệu buổi học
+                if (!dayOfWeek || !time || !locationType) {
+                    isConflict = true;
+                    showAlert('LỖI DỮ LIỆU', 'Vui lòng điền đầy đủ thông tin cho tất cả các buổi học.', 'error');
+                    return;
+                }
+
+                sessions.push({
+                    dayOfWeek,
+                    time,
+                    locationType,
+                    location
+                });
+            });
+
+            if (isConflict) {
+                return;
+            }
+
+            const newCourse = {
+                id: Date.now(),
+                courseName: document.getElementById('course-name').value,
+                classCode: document.getElementById('class-code').value,
+                regCode: document.getElementById('reg-code').value,
+                semesterWeek: semesterWeek,
+                lecturer: document.getElementById('lecturer').value,
+                credits: parseInt(document.getElementById('credits').value, 10),
+                sessions: sessions
+            };
+
+            const semesters = getSemestersFromLabel(newCourse.semesterWeek);
+
+            // Kiểm tra trùng lịch với các môn đã đăng ký
+            for (const existingCourse of registeredCourses) {
+                const existingSemesters = getSemestersFromLabel(existingCourse.semesterWeek);
+                const hasCommonSemester = existingSemesters.some(s => semesters.includes(s));
+
+                if (hasCommonSemester) {
+                    for (const newSession of newCourse.sessions) {
+                        for (const existingSession of existingCourse.sessions) {
+                            if (newSession.dayOfWeek === existingSession.dayOfWeek) {
+                                const newStartTimeInMin = timeToMinutes(newSession.time.split('-')[0]);
+                                const newEndTimeInMin = timeToMinutes(newSession.time.split('-')[1]);
+                                const existingStartTimeInMin = timeToMinutes(existingSession.time.split('-')[0]);
+                                const existingEndTimeInMin = timeToMinutes(existingSession.time.split('-')[1]);
+
+                                if (Math.max(newStartTimeInMin, existingStartTimeInMin) < Math.min(newEndTimeInMin, existingEndTimeInMin)) {
+                                    isConflict = true;
+
+                                    // CẬP NHẬT CÁCH GỌI HÀM showAlert
+                                    const detailsHTML = `Môn: <b>${existingCourse.courseName}</b><br>
+                                                 Thời gian: <b>${existingSession.time}</b><br>
+                                                 Ngày: <b>${existingSession.dayOfWeek}</b>`;
+
+                                    showAlert(
+                                        'LỊCH HỌC BỊ TRÙNG!',
+                                        'Môn bạn đang cố gắng đăng ký bị trùng với môn:',
+                                        'error',
+                                        detailsHTML
+                                    );
+                                    break;
+                                }
+                            }
+                        }
+                        if (isConflict) break;
+                    }
+                }
+                if (isConflict) break;
+            }
+
+            if (isConflict) {
+                return;
+            }
+
+            registeredCourses.push(newCourse);
+            registeredCourses.sort((a, b) => timeToMinutes(a.sessions[0].time.split('-')[0]) - timeToMinutes(b.sessions[0].time.split('-')[0]));
+            renderTimetable();
+
+            // CẬP NHẬT CÁCH GỌI HÀM showAlert
+            showAlert('THÀNH CÔNG', 'Đăng ký môn học thành công!', 'success');
+
+            document.getElementById('course-form').reset();
+            // Thay thế đoạn mã cũ bằng đoạn HTML sau để form hiển thị lại dropdown
+            document.getElementById('class-sessions-container').innerHTML = `
+<div class="class-session-row">
+    <div class="input-row">
+        <div class="input-group">
+            <label for="day-of-week-0">Thứ:</label>
+            <select id="day-of-week-0" class="day-of-week" required>
+                <option value="">-- Chọn --</option>
+                <option value="T2">T2</option>
+                <option value="T3">T3</option>
+                <option value="T4">T4</option>
+                <option value="T5">T5</option>
+                <option value="T6">T6</option>
+                <option value="T7">T7</option>
+                <option value="CN">CN</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="time-0">Giờ học:</label>
+            <select id="time-0" class="time" required>
+                <option value="">-- Chọn --</option>
+                <option value="07:00-09:00">07:00 - 09:00</option>
+                <option value="07:00-10:15">07:00 - 10:15</option>
+                <option value="07:00-11:15">07:00 - 11:15</option>
+                <option value="09:15-11:15">09:15 - 11:15</option>
+                <option value="13:00-15:00">13:00 - 15:00</option>
+                <option value="13:00-16:15">13:00 - 16:15</option>
+                <option value="13:00-17:15">13:00 - 17:15</option>
+                <option value="15:15-17:15">15:15 - 17:15</option>
+                <option value="17:45-21:00">17:45 - 21:00</option>
+            </select>
+        </div>
+    </div>
+    <div class="input-row">
+        <label for="location-type-0">Loại địa điểm:</label>
+        <select id="location-type-0" class="location-type" required>
+            <option value="">-- Chọn --</option>
+            <option value="online">Online</option>
+            <option value="campus">Cơ sở</option>
+        </select>
+        <div class="campus-location-field" style="display:none;">
+            <label for="location-0">Địa điểm:</label>
+            <select id="location-0" class="location" required>
+                <option value="">-- Chọn địa điểm --</option>
+                <option value="Hòa Khánh Nam">Hòa Khánh Nam</option>
+                <option value="209 Phan Thanh">209 Phan Thanh</option>
+                <option value="K7/25 Quang Trung">K7/25 Quang Trung</option>
+                <option value="254 Nguyễn Văn Linh">254 Nguyễn Văn Linh</option>
+                <option value="78A Phan Văn Trị">78A Phan Văn Trị</option>
+                <option value="137 Nguyễn Văn Linh">137 Nguyễn Văn Linh</option>
+                <option value="03 Quang Trung">03 Quang Trung</option>
+            </select>
+        </div>
+        <button type="button" class="remove-session-btn" style="display:none;">Xóa</button>
+    </div>
+</div>
+`;
+            sessionCounter = 1;
+            document.querySelector('.class-session-row .location-type').addEventListener('change', handleLocationTypeChange);
+            document.querySelector('.class-session-row .remove-session-btn').addEventListener('click', removeSession);
+        });
+
+        // Cập nhật danh sách môn đã đăng ký và tổng tín chỉ
+        function updateRegisteredCoursesList() {
+            const tbody = document.getElementById('registered-courses-body');
+            tbody.innerHTML = '';
+            let totalCredits = 0;
+
+            registeredCourses.forEach((course, index) => {
+                const row = tbody.insertRow();
+                const semesterLabel = course.semesterWeek;
+                row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${course.courseName}</td>
+            <td>${course.classCode}</td>
+            <td>${course.regCode}</td>
+            <td>${semesterLabel}</td>
+            <td>${course.credits}</td>
+            <td>${course.lecturer}</td>
+            <td><button class="remove-btn" onclick="removeCourse(${course.id})">Xóa</button></td>
+        `;
+                totalCredits += parseInt(course.credits, 10);
+            });
+
+            document.getElementById('total-credits').textContent = totalCredits;
+            calculateTuitionFee();
+        }
+
+        // Xóa môn học
+        function removeCourse(courseId) {
+            registeredCourses = registeredCourses.filter(c => c.id !== courseId);
+            renderTimetable();
+            updateRegisteredCoursesList();
+        }
+
+        // Xóa tất cả môn học
+        function clearAllCourses() {
+            registeredCourses = [];
+            renderTimetable();
+            updateRegisteredCoursesList();
+
+            // CẬP NHẬT CÁCH GỌI HÀM showAlert
+            showAlert('THÀNH CÔNG', 'Đã xóa tất cả môn học.', 'success');
+        }
+
+        // Tính toán học phí
+        function calculateTuitionFee() {
+            const totalCredits = parseInt(document.getElementById('total-credits').textContent);
+            const feePer16Credits = parseFloat(document.getElementById('fee-per-credit').value.replace(/[^0-9]/g, '')) || 0;
+            const programType = document.querySelector('input[name="program-type"]:checked').value;
+            let tuitionFee = 0;
+
+            // Lưu giá trị vào biến toàn cục
+            tuitionFeeData.feePer16Credits = feePer16Credits;
+            tuitionFeeData.programType = programType;
+
+            if (feePer16Credits === 0) {
+                document.getElementById('total-tuition-fee').textContent = 'Vui lòng nhập học phí';
+                return;
+            }
+
+            const feePerCredit = feePer16Credits / 16;
+            let baseFee = feePer16Credits;
+
+            if (programType === 'normal') {
+                if (totalCredits < 14) {
+                    tuitionFee = totalCredits * feePerCredit;
+                } else if (totalCredits >= 14 && totalCredits <= 19) {
+                    tuitionFee = baseFee;
+                } else if (totalCredits > 19) {
+                    const extraCredits = totalCredits - 19;
+                    tuitionFee = baseFee + (extraCredits * feePerCredit);
+                }
+            } else if (programType === 'advanced') {
+                if (totalCredits < 14) {
+                    tuitionFee = totalCredits * feePerCredit;
+                } else if (totalCredits >= 14 && totalCredits <= 21) {
+                    tuitionFee = baseFee;
+                } else if (totalCredits > 21) {
+                    const extraCredits = totalCredits - 21;
+                    tuitionFee = baseFee + (extraCredits * feePerCredit);
+                }
+            }
+
+            const formattedFee = tuitionFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            document.getElementById('total-tuition-fee').textContent = formattedFee;
+        }
+
+        // Hàm xuất dữ liệu ra file JSON
+        function exportData() {
+            if (registeredCourses.length === 0) {
+                showAlert('LỖI XUẤT FILE', 'Không có dữ liệu để xuất.', 'error');
+                return;
+            }
+            const dataToExport = {
+                courses: registeredCourses,
+                tuitionFeeData: tuitionFeeData
+            };
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'thoi-khoa-bieu.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // CẬP NHẬT CÁCH GỌI HÀM showAlert
+            showAlert('THÀNH CÔNG', 'Xuất file thành công!', 'success');
+        }
+
+        // Hàm tải dữ liệu từ file JSON
+        function loadData(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const loadedData = JSON.parse(e.target.result);
+                    if (!loadedData.courses || !Array.isArray(loadedData.courses)) {
+                        throw new Error('Định dạng file không hợp lệ.');
+                    }
+                    registeredCourses = loadedData.courses;
+                    tuitionFeeData = loadedData.tuitionFeeData || { feePer16Credits: 0, programType: 'normal' };
+
+                    // Cập nhật giao diện từ dữ liệu đã tải
+                    if (tuitionFeeData.feePer16Credits) {
+                        document.getElementById('fee-per-credit').value = tuitionFeeData.feePer16Credits.toLocaleString('vi-VN');
+                    }
+                    document.querySelector(`input[name="program-type"][value="${tuitionFeeData.programType}"]`).checked = true;
+
+                    renderTimetable();
+                    updateRegisteredCoursesList();
+
+                    // CẬP NHẬT CÁCH GỌI HÀM showAlert
+                    showAlert('THÀNH CÔNG', 'Tải dữ liệu thành công!', 'success');
+                } catch (error) {
+                    console.error('Lỗi khi tải file:', error);
+                    showAlert('LỖI DỮ LIỆU', 'Định dạng file không hợp lệ. Vui lòng tải file JSON đúng định dạng.', 'error');
+                }
+            };
+            reader.onerror = function () {
+                showAlert('LỖI ĐỌC FILE', 'Lỗi khi đọc file. Vui lòng thử lại.', 'error');
+            };
+            reader.readAsText(file);
+        }
+
+        // Thêm sự kiện để format giá trị khi nhập
+        document.getElementById('fee-per-credit').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            calculateTuitionFee();
+        });
+
+        function redirectToPage() {
+            window.location.href = "chuyendoijson.html";
+        }
+    </script>>
+</body>
+
+</html>

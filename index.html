@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tân</title>
+    <link rel="icon" href="logoo.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* ======================== CSS CHUNG ======================== */
+        :root {
+            --sidebar-width: 200px;
+            --header-height: 50px;
+            --main-red: #d9534f;
+            --dark-red: #c9302c;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* HEADER */
+        .header {
+            display: none;
+            background-color: var(--main-red);
+            color: white;
+            padding: 10px 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            box-sizing: border-box;
+            z-index: 20;
+            align-items: center;
+        }
+
+        .menu-toggle {
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        /* Tiêu đề Header có thể bấm để về trang chủ */
+        .header-title {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--main-red);
+            color: white;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            position: relative;
+            transition: width 0.3s ease;
+            padding-bottom: 40px;
+            z-index: 10;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: var(--sidebar-width);
+        }
+
+        .sidebar li {
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        /* MENU ITEM */
+        .menu-item-parent {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            line-height: 1.4;
+            height: 45px;
+            box-sizing: border-box;
+        }
+
+        .menu-item-parent:hover {
+            background-color: var(--dark-red);
+        }
+
+        .arrow-icon {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+            font-size: 10px;
+        }
+
+        .menu-item.open .arrow-icon {
+            transform: rotate(90deg);
+        }
+
+        /* SUBMENU */
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #b73f3c;
+        }
+
+        .submenu li a {
+            display: block;
+            padding: 8px 15px 8px 30px;
+            text-decoration: none;
+            color: inherit;
+            font-weight: normal;
+            white-space: normal;
+        }
+
+        .submenu li:hover {
+            background-color: #a13633;
+        }
+
+        /* CONTENT AREA */
+        .content-area {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+            background-color: #fff;
+            position: relative;
+        }
+
+        #contentFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 15;
+            cursor: pointer;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* NÚT TOGGLE (Góc dưới trái) */
+        .sidebar-toggle-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 40px;
+            background-color: #a13633;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: width 0.3s ease, background-color 0.3s;
+            z-index: 20;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-toggle-btn:hover {
+            background-color: #8a2a27;
+        }
+
+        /* TRẠNG THÁI THU NHỎ (Collapsed) */
+        body.sidebar-collapsed .sidebar {
+            width: 50px;
+        }
+
+        body.sidebar-collapsed .sidebar ul {
+            width: 50px;
+        }
+
+        body.sidebar-collapsed .menu-item-parent span.menu-text,
+        body.sidebar-collapsed .menu-item-parent .arrow-icon {
+            display: none;
+        }
+
+        body.sidebar-collapsed .menu-item-parent {
+            padding: 10px 0;
+            justify-content: center;
+        }
+
+        body.sidebar-collapsed .menu-item-parent i {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        body.sidebar-collapsed .sidebar-toggle-btn {
+            width: 50px;
+        }
+
+        body.sidebar-collapsed .sidebar-toggle-btn i {
+            transform: rotate(180deg);
+        }
+
+        body.sidebar-collapsed .submenu {
+            display: none !important;
+        }
+
+        /* ======================== MOBILE ======================== */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .header {
+                display: flex;
+            }
+
+            .sidebar {
+                position: fixed;
+                height: 100%;
+                width: 70%;
+                left: -70%;
+                top: 0;
+                transition: left 0.3s ease;
+                z-index: 25;
+                padding-top: var(--header-height);
+                padding-bottom: 0;
+            }
+
+            .sidebar.active {
+                left: 0;
+                width: 70%;
+            }
+
+            .sidebar-toggle-btn {
+                display: none;
+            }
+
+            .content-area {
+                margin-top: var(--header-height);
+                height: calc(100vh - var(--header-height));
+            }
+
+            body.sidebar-collapsed .sidebar {
+                width: 70%;
+            }
+
+            body.sidebar-collapsed .menu-item-parent span.menu-text {
+                display: inline;
+            }
+
+            body.sidebar-collapsed .menu-item-parent {
+                justify-content: flex-start;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <span class="menu-toggle" id="menuToggle">☰</span>
+        <div class="header-title" onclick="loadContent('giaodien.html')">Tiện ích DTU</div>
+    </div>
+
+    <div class="overlay" id="menuOverlay"></div>
+
+    <nav class="sidebar" id="sidebarMenu">
+        <ul>
+            <li class="menu-item" data-has-submenu="true">
+                <div class="menu-item-parent">
+                    <span class="menu-text">🌎 Cộng đồng</span>
+                    <span class="arrow-icon">▶</span>
+                </div>
+                <ul class="submenu">
+                    <li><a href="https://chongcau.github.io/embe/" target="_blank"><i class="fa-solid fa-globe"></i>
+                            Admin</a></li>
+                    <li><a href="https://t.me/s/Dai_Hoc_Duy_Tan" target="_blank"><i class="fab fa-telegram-plane"></i>
+                            DTU Official Community</a></li>
+                    <li><a href="https://t.me/chatsinhvienDTU" target="_blank"><i class="fab fa-telegram-plane"></i>
+                            Chat DTU</a></li>
+                    <li><a href="https://www.facebook.com/groups/hoctaptraodoidtu" target="_blank"><i
+                                class="fa-brands fa-facebook"></i> DTU - Đại Học Duy Tân</a></li>
+                    <li><a href="https://m.me/ch/AbYHpkvOaYX52NjY/?send_source=cm%3Acopy_invite_link" target="_blank"><i
+                                class="fa-brands fa-facebook-messenger"></i> 🎓DTU Official Community🗂</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item" data-has-submenu="true">
+                <div class="menu-item-parent">
+                    <span class="menu-text">🏫 Thông Tin</span>
+                    <span class="arrow-icon">▶</span>
+                </div>
+                <ul class="submenu">
+                    <li><a onclick="window.location.href='https://mydtu.duytan.edu.vn/Signin.aspx'">MyDTU</a></li>
+                    <li><a onclick="window.location.href='https://pdaotao.duytan.edu.vn/home/Default.aspx?lang=VN'">Phòng
+                            đào tạo</a></li>
+                    <li><a onclick="window.location.href='https://gdtcqp.duytan.edu.vn/'">TT GDTC</a></li>
+                    <li><a onclick="window.location.href='https://duytan.edu.vn/tuyen-sinh/Page/Home.aspx'">Tuyển
+                            sinh</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item" data-has-submenu="true">
+                <div class="menu-item-parent">
+                    <span class="menu-text">📈 Tính Điểm</span>
+                    <span class="arrow-icon">▶</span>
+                </div>
+                <ul class="submenu">
+                    <li><a href="tinhdiemhocphan.html" data-url="tinhdiemhocphan.html">Tính Điểm Học Phần</a></li>
+                    <li><a href="tinhdiemtichluy.html" data-url="tinhdiemtichluy.html">Tính Điểm Tích Lũy</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item" data-has-submenu="true">
+                <div class="menu-item-parent">
+                    <span class="menu-text">📅 Thi KTHP</span>
+                    <span class="arrow-icon">▶</span>
+                </div>
+                <ul class="submenu">
+                    <li><a href="lichthi1.html" data-url="lichthi1.html">Lịch thi chi tiết</a></li>
+                    <li><a href="lichthi2.html" data-url="lichthi2.html">Lịch thi gọn</a></li>
+                    <li><a href="danhsachthi.html" data-url="tinhdiemtichluy.html">Danh sách thi</a></li>
+                    <li><a
+                            onclick="window.location.href='https://pdaotao.duytan.edu.vn/EXAM_LIST/Default.aspx?lang=VN'">Thông
+                            báo PDT</a></li>
+                    <li><a onclick="window.location.href='https://pdaotao.duytan.edu.vn/Search/Default.aspx?lang=VN'">Danh
+                            sách thi 1</a></li>
+                    <li><a
+                            onclick="window.location.href='https://pdaotao.duytan.edu.vn/EXAM_LIST/Default.aspx?lang=VN'">Danh
+                            sách thi 2</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item" data-has-submenu="true">
+                <div class="menu-item-parent">
+                    <span class="menu-text">💻 Đăng ký tín chỉ</span>
+                    <span class="arrow-icon">▶</span>
+                </div>
+                <ul class="submenu">
+                    <li><a href="thoikhoabieu1.html" data-url="thoikhoabieu1.html">Thời khóa biểu 1</a></li>
+                    <li><a href="thoikhoabieu2.html" data-url="thoikhoabieu2.html">Thời khóa biểu 2</a></li>
+                    <li><a href="tongtinchi.html" data-url="lichthi.html">Tổng tín chỉ</a></li>
+                    <li><a
+                            onclick="window.location.href='https://courses.duytan.edu.vn/sites/Home_ChuongTrinhDaoTao.aspx?p=home_coursesearch'">Tra
+                            môn học</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item" data-has-submenu="true">
+                <div class="menu-item-parent">
+                    <span class="menu-text">🪄 Tiện ích</span>
+                    <span class="arrow-icon">▶</span>
+                </div>
+                <ul class="submenu">
+                    <li><a href="dinhdangcauhoilearning.html" data-url="dinhdangcauhoilearning.html">Định dạng câu
+                            hỏi</a></li>
+                    <li><a href="tinhhocphidtu.html" data-url="tinhhocphidtu.html">Học phí</a></li>
+                    <li><a href="danhsachmonhoc.html" data-url="danhsachmonhoc.html">Môn học</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item" data-has-submenu="true">
+                <div class="menu-item-parent">
+                    <span class="menu-text">📍 Vị trí</span>
+                    <span class="arrow-icon">▶</span>
+                </div>
+                <ul class="submenu">
+                    <li><a href="bandocosodtu.html" data-url="bandocosodtu.html">Vị trí cơ sở</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item" id="btnHuongDan" data-has-submenu="false">
+                <div class="menu-item-parent">
+                    <i class="fa-solid fa-circle-exclamation" style="width:18px;text-align:center; color: #fff;"></i>
+                    <span class="menu-text">HƯỚNG DẪN</span>
+                </div>
+            </li>
+
+        </ul>
+
+        <div id="pcSidebarToggle" class="sidebar-toggle-btn" title="Đóng/Mở Menu">
+            <i class="fa-solid fa-chevron-left"></i>
+        </div>
+    </nav>
+
+    <main class="content-area" id="contentArea">
+        <iframe id="contentFrame" src="giaodien.html"></iframe>
+    </main>
+
+    <script src="lock_system.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuItems = document.querySelectorAll('.menu-item');
+            const sidebar = document.getElementById('sidebarMenu');
+            const menuToggle = document.getElementById('menuToggle');
+            const menuOverlay = document.getElementById('menuOverlay');
+            const contentFrame = document.getElementById('contentFrame');
+            const pcToggleBtn = document.getElementById('pcSidebarToggle');
+
+            // --- TOGGLE SIDEBAR LOGIC ---
+            if (localStorage.getItem('sidebarState') === 'collapsed') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+
+            if (pcToggleBtn) {
+                pcToggleBtn.addEventListener('click', function () {
+                    document.body.classList.toggle('sidebar-collapsed');
+                    localStorage.setItem('sidebarState', document.body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'open');
+                });
+            }
+
+            // --- NAVIGATION LOGIC ---
+            // forceIframe = true để bắt buộc tải vào khung (dùng cho Hướng dẫn)
+            window.loadContent = function (url, forceIframe) {
+                if (!url) return;
+
+                // Nếu là link web bình thường (không phải file nội bộ) và KHÔNG bắt buộc tải vào iframe
+                if (!forceIframe && (url.startsWith('http://') || url.startsWith('https://'))) {
+                    window.open(url, '_blank');
+                    return;
+                }
+
+                contentFrame.src = url;
+                closeMobileMenu();
+            }
+
+            function closeMobileMenu() {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                    menuOverlay.classList.remove('active');
+                }
+            }
+
+            function toggleSubmenu(menuItem) {
+                if (document.body.classList.contains('sidebar-collapsed') && window.innerWidth > 768) return;
+
+                const submenu = menuItem.querySelector('.submenu');
+                const isOpened = menuItem.classList.contains('open');
+
+                // Đóng các menu khác
+                menuItems.forEach(item => {
+                    if (item !== menuItem && item.classList.contains('open')) {
+                        const s = item.querySelector('.submenu');
+                        if (s) s.style.maxHeight = '0';
+                        item.classList.remove('open');
+                    }
+                });
+
+                if (submenu) {
+                    if (isOpened) {
+                        submenu.style.maxHeight = '0';
+                        menuItem.classList.remove('open');
+                    } else {
+                        submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                        menuItem.classList.add('open');
+                    }
+                }
+            }
+
+            // --- XỬ LÝ CLICK MENU ---
+            menuItems.forEach(item => {
+                const parentDiv = item.querySelector('.menu-item-parent');
+                const isHuongDan = item.id === 'btnHuongDan';
+
+                if (parentDiv) {
+                    parentDiv.addEventListener('click', function () {
+                        // Nếu là nút Hướng Dẫn
+                        if (isHuongDan) {
+                            // Tải link Google Docs vào iframe (tham số true để ép tải vào khung)
+                            loadContent('https://docs.google.com/document/d/e/2PACX-1vQQKiwsFFtr6PAggYOKK02yDwwxTYzmld-0J_VxOf6riLqqw0G8Xs4Y258LDS4TgyQ-xQLCcPVXCgpA/pub?embedded=true', true);
+
+                            // Đóng các submenu đang mở khác cho gọn
+                            menuItems.forEach(other => {
+                                if (other.classList.contains('open')) {
+                                    const s = other.querySelector('.submenu');
+                                    if (s) s.style.maxHeight = '0';
+                                    other.classList.remove('open');
+                                }
+                            });
+                            return;
+                        }
+
+                        // Logic Accordion cho các menu có submenu
+                        const hasSubmenu = item.getAttribute('data-has-submenu') === 'true';
+                        if (hasSubmenu) {
+                            toggleSubmenu(item);
+                        }
+                    });
+                }
+
+                // Xử lý link con bên trong submenu
+                const submenuLinks = item.querySelectorAll('.submenu a');
+                submenuLinks.forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        let url = link.getAttribute('href');
+                        const onclickAttribute = link.getAttribute('onclick');
+
+                        if (onclickAttribute && onclickAttribute.includes('window.location.href=')) return; // Link ngoài
+
+                        if ((url && (url.startsWith('http://') || url.startsWith('https://'))) || link.getAttribute('target') === '_blank') {
+                            closeMobileMenu();
+                            return;
+                        }
+
+                        e.preventDefault();
+                        if (url) loadContent(url);
+                    });
+                });
+            });
+
+            // Mobile menu events
+            if (menuToggle) {
+                menuToggle.addEventListener('click', function () {
+                    sidebar.classList.add('active');
+                    menuOverlay.classList.add('active');
+                });
+            }
+            if (menuOverlay) {
+                menuOverlay.addEventListener('click', closeMobileMenu);
+            }
+        });
+    </script>
+</body>
+
+</html>

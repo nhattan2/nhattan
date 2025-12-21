@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tính Điểm DTU</title>
+    <link rel="icon" href="logoo.png" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap');
+
+        /* --- CẤU HÌNH RESET VÀ ẨN THANH CUỘN (QUAN TRỌNG) --- */
+        * {
+            box-sizing: border-box;
+            /* Đảm bảo kích thước tính cả padding */
+        }
+
+        /* Ẩn thanh cuộn cho Chrome, Safari, Edge, Opera */
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none !important;
+            /* Dùng !important để ép buộc ẩn */
+            width: 0px;
+            background: transparent;
+        }
+
+        html,
+        body {
+            -ms-overflow-style: none;
+            /* IE và Edge */
+            scrollbar-width: none;
+            /* Firefox */
+            overflow-x: hidden;
+            /* Chặn cuộn ngang */
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px 0;
+            min-height: 100vh;
+
+            /* --- CHỐNG BÔI ĐEN --- */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --primary-color: #A1242E;
+            --pass-color: #28a745;
+            --fail-color: #dc3545;
+            --warning-color: #ffc107;
+            --border-color: #dee2e6;
+            --text-color: #343a40;
+            --background-color: #f8caca;
+            --copy-color: #6f42c1;
+        }
+
+        /* Cho phép nhập liệu trong input */
+        input {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            align-items: flex-start;
+            justify-content: center;
+            /* Căn giữa toàn bộ nội dung */
+        }
+
+        .panel {
+            border-radius: 12px;
+            padding: 30px;
+            background-color: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .input-panel {
+            flex: 6;
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-panel {
+            flex: 4;
+            position: sticky;
+            top: 20px;
+            background: none;
+            box-shadow: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Bảng nhập liệu */
+        .input-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .input-table th,
+        .input-table td {
+            padding: 14px 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .input-table th {
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid var(--border-color);
+            background-color: #f7f7f7;
+            font-size: 14px;
+        }
+
+        .input-table td {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .input-table input {
+            width: 100%;
+            padding: 10px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .input-table input:focus {
+            border-color: var(--primary-color);
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(161, 36, 46, 0.15);
+        }
+
+        /* Nút xóa hàng */
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Khu vực Controls */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 120px;
+            /* Đảm bảo nút không bị bóp quá nhỏ */
+            white-space: nowrap;
+        }
+
+        .add-btn {
+            background-color: var(--pass-color);
+        }
+
+        .reset-btn {
+            background-color: var(--warning-color);
+            color: #212529;
+        }
+
+        .copy-btn {
+            background-color: var(--copy-color);
+        }
+
+        .btn-quick {
+            background-color: #17a2b8;
+        }
+
+        /* Thanh phần trăm tổng */
+        #total-percent {
+            font-weight: bold;
+            text-align: right;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f7f7f7;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        /* Khu vực Kết quả */
+        .result-container {
+            border-top: 5px solid var(--primary-color);
+            text-align: center;
+            background-color: white;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px;
+        }
+
+        .result-container.pass-border {
+            border-top-color: var(--pass-color);
+        }
+
+        .result-container.fail-border {
+            border-top-color: var(--fail-color);
+        }
+
+        .status {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #6c757d;
+        }
+
+        .status-pass {
+            color: var(--pass-color);
+        }
+
+        .status-fail {
+            color: var(--fail-color);
+        }
+
+        .status-wait {
+            color: #6c757d;
+        }
+
+        .min-score-detail {
+            margin-bottom: 8px;
+            text-align: left;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+            font-size: 0.95em;
+        }
+
+        /* BOX HIỂN THỊ TỔNG THÀNH PHẦN */
+        .comp-summary-box {
+            background-color: #fff0f0;
+            color: #A1242E;
+            padding: 8px 15px;
+            border-radius: 6px;
+            margin: 10px auto 20px auto;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: 1px dashed #A1242E;
+            display: inline-block;
+            width: 90%;
+        }
+
+        .comp-summary-box span {
+            font-weight: 800;
+            font-size: 1.2em;
+        }
+
+        /* Footer ảnh */
+        .dtu-logo-footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .dtu-logo-footer img {
+            max-width: 150px;
+            opacity: 0.8;
+        }
+
+        /* QR CODE CHO ẢNH CHỤP (Ẩn mặc định) */
+        #qr-capture-section {
+            display: none;
+            margin-top: 15px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #A1242E;
+            text-align: center;
+        }
+
+        #footer-time-capture {
+            display: none;
+        }
+
+        /* Toast Notification */
+        #toast-notification {
+            visibility: hidden;
+            min-width: 250px;
+            background: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            top: 30px;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.5s, top 0.5s;
+        }
+
+        #toast-notification.show {
+            visibility: visible;
+            opacity: 1;
+            top: 60px;
+        }
+
+        /* Modal Tính Nhanh */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            border-top: 5px solid var(--primary-color);
+            position: relative;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .qc-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: #eee;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .qc-input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+
+        .qc-field {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .qc-field label {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 8px;
+            min-height: 42px;
+            line-height: 1.2;
+            font-weight: 600;
+        }
+
+        .qc-field input {
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .qc-summary {
+            text-align: center;
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            border: 1px dashed #2196f3;
+        }
+
+        .qc-result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .qc-result-table td {
+            padding: 8px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .qc-capture-btn {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: var(--copy-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        /* --- MOBILE RESPONSIVE (TỰ ĐIỀU CHỈNH) --- */
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+                padding: 10px;
+                gap: 15px;
+                align-items: stretch;
+                /* Kéo dãn full chiều ngang */
+            }
+
+            .panel {
+                padding: 15px;
+            }
+
+            .input-panel,
+            .result-panel {
+                width: 100%;
+                box-shadow: none;
+            }
+
+            .result-panel {
+                position: static;
+            }
+
+            h1 {
+                font-size: 1.6em;
+                margin-bottom: 20px;
+            }
+
+            .controls {
+                gap: 8px;
+                /* Chia 2 hàng đều nhau */
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .btn {
+                font-size: 14px;
+                padding: 12px 5px;
+                width: 100%;
+                /* Full ô grid */
+                min-width: 0;
+            }
+
+            /* Điều chỉnh bảng nhập liệu trên mobile */
+            .input-table th,
+            .input-table td {
+                padding: 8px 4px;
+                font-size: 13px;
+            }
+
+            .input-table input {
+                padding: 8px 4px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <div class="input-panel panel">
+            <h1>Tính Điểm Học Phần</h1>
+            <div class="input-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;">STT</th>
+                            <th>Tên Bài Giao</th>
+                            <th style="width: 100px;">Điểm</th>
+                            <th style="width: 100px;">% Tối đa</th>
+                            <th style="width: 30px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="fixed-row">
+                            <td class="stt-cell">★</td>
+                            <td>Kiểm Tra Cuối Kỳ</td>
+                            <td id="final-exam-score-display">—</td>
+                            <td><input type="number" id="final-exam-weight" placeholder="%" readonly
+                                    style="background-color: #e9ecef; font-weight: bold; color: #A1242E;"></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <tbody id="grade-rows"></tbody>
+                </table>
+            </div>
+
+            <div id="total-percent">Phần trăm: 100%</div>
+
+            <div id="final-score-input-container"
+                style="text-align:center; margin-top:15px; padding:10px; background:#f7f7f7; border-radius:6px;">
+                <label>Điểm thi cuối kỳ: </label>
+                <input type="number" id="final-exam-score-manual" placeholder="Trống tự tính" min="0" max="10"
+                    step="0.01" style="width:100px; padding:5px;">
+            </div>
+
+            <div id="footer-time-capture"></div>
+
+            <div class="controls">
+                <button id="add-row-btn" class="btn add-btn">➕ Thêm</button>
+                <button onclick="toggleQuickCalc()" class="btn btn-quick">⚡ Tính Nhanh</button>
+                <button id="copy-btn" class="btn copy-btn">📸 Chụp</button>
+                <button id="reset-btn" class="btn reset-btn">🔄 Nhập Lại</button>
+            </div>
+        </div>
+
+        <div class="result-panel">
+            <div class="result-container panel" id="result-container">
+                <div id="result-display"></div>
+            </div>
+
+            <div id="qr-capture-section">
+                <div style="font-weight: 800; color: #A1242E; margin-bottom: 5px; font-size: 18px;">THÔNG BÁO & MÔN HỌC
+                    DTU
+                </div>
+                <img src="maqrtelegram.jpg" style="width: 400px; height: 400px; display:inline-block;"
+                    alt="QR Telegram">
+                <div style="margin-top: 20px; font-weight: 700; color: #333; font-size: 20px;">@chatsinhvienDTU</div>
+            </div>
+
+            <div class="dtu-logo-footer">
+                <img src="https://dhduytan.com/wp-content/uploads/2025/05/cropped-logo-duy-tan_vn.png" alt="Logo DTU">
+            </div>
+        </div>
+    </div>
+
+    <div id="quickCalcModal" class="modal-overlay">
+        <div class="modal-content" id="modal-content-area">
+            <span class="qc-close" onclick="toggleQuickCalc()">✕</span>
+            <h2 style="text-align: center; color: var(--primary-color); margin: 5px 0 15px 0;">⚡ TÍNH NHANH</h2>
+
+            <div id="qc-summary-display" class="qc-summary" style="display:none;"></div>
+
+            <div class="qc-input-group">
+                <div class="qc-field">
+                    <label>Tổng thành phần (%)</label>
+                    <input type="number" id="qc-weight-percent" placeholder="VD: 45" oninput="calculateQuickGrade()">
+                </div>
+                <div class="qc-field">
+                    <label>Điểm đã đạt (%)</label>
+                    <input type="number" id="qc-score-percent" placeholder="VD: 46" oninput="calculateQuickGrade()">
+                </div>
+            </div>
+
+            <div id="qc-result-area" style="display:none;">
+                <div style="background:#f8f9fa; padding:10px; border-radius:8px; text-align:center; margin-bottom:10px;"
+                    id="qc-message-box"></div>
+                <table class="qc-result-table" id="qc-table-body"></table>
+
+                <button class="qc-capture-btn" id="qc-capture-btn" onclick="captureQuickCalcModal()">📸 Chụp</button>
+            </div>
+        </div>
+    </div>
+
+    <img id="qr-source-img" src="maqrtelegram.jpg" style="display:none;" alt="QR Source">
+
+    <div id="toast-notification">Thông báo</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const gradeRowsContainer = document.getElementById('grade-rows');
+            const totalPercentDisplay = document.getElementById('total-percent');
+            const resultDisplay = document.getElementById('result-display');
+            const resultContainer = document.getElementById('result-container');
+            const finalExamWeightInput = document.getElementById('final-exam-weight');
+            const finalExamScoreManualInput = document.getElementById('final-exam-score-manual');
+            const finalExamScoreDisplay = document.getElementById('final-exam-score-display');
+            const toast = document.getElementById('toast-notification');
+
+            // --- 1. TẠO DÒNG MỚI ---
+            const createNewRow = () => {
+                const row = document.createElement('tr');
+                row.classList.add('input-row');
+                row.innerHTML = `<td class="stt-cell"></td>
+                                 <td>Điểm thành phần</td>
+                                 <td><input type="number" class="grade-input grade-score" placeholder="0-10"></td>
+                                 <td><input type="number" class="grade-input grade-weight" placeholder="%"></td>
+                                 <td><button class="remove-btn">-</button></td>`;
+
+                const scoreInput = row.querySelector('.grade-score');
+                const weightInput = row.querySelector('.grade-weight');
+
+                scoreInput.addEventListener('change', function () {
+                    let val = parseFloat(this.value);
+                    if (val < 0 || val > 10) { this.value = ''; showToast("⚠️ Điểm chỉ từ 0 - 10!", "fail"); }
+                    updateUI();
+                });
+
+                weightInput.addEventListener('change', function () {
+                    let val = parseFloat(this.value);
+                    if (val < 0 || val > 100) { this.value = ''; showToast("⚠️ Trọng số chỉ từ 0 - 100%!", "fail"); }
+                    updateUI();
+                });
+
+                row.querySelector('.remove-btn').addEventListener('click', () => { row.remove(); updateUI(); });
+                row.querySelectorAll('input').forEach(input => input.addEventListener('input', updateUI));
+                gradeRowsContainer.appendChild(row);
+                updateRowNumbers();
+            };
+
+            const updateRowNumbers = () => {
+                gradeRowsContainer.querySelectorAll('.input-row').forEach((row, index) => {
+                    row.querySelector('.stt-cell').textContent = index + 1;
+                    row.cells[1].textContent = `Điểm thành phần ${index + 1}`;
+                });
+            };
+
+            // --- TÍNH TOÁN CÂN BẰNG TRỌNG SỐ ---
+            const updateUI = () => {
+                let totalWeight = 0;
+                document.querySelectorAll('.grade-weight').forEach(inp => totalWeight += parseFloat(inp.value) || 0);
+
+                let remaining = 100 - totalWeight;
+                if (remaining < 0) {
+                    totalPercentDisplay.style.color = 'var(--fail-color)';
+                    totalPercentDisplay.innerText = `LỖI: Tổng ${totalWeight}% > 100%!`;
+                    remaining = 0;
+                } else {
+                    totalPercentDisplay.style.color = 'var(--text-color)';
+                    totalPercentDisplay.innerText = `Phần trăm: 100%`;
+                }
+                finalExamWeightInput.value = remaining;
+                calculateAndDisplay();
+            };
+
+            const calculateAndDisplay = () => {
+                let finalWeightedScore = 0;
+                let finalExamWeight = parseFloat(finalExamWeightInput.value) || 0;
+                let componentWeightedScoreTotal = 0;
+                let componentWeightTotal = 0;
+
+                const finalExamScoreVal = parseFloat(finalExamScoreManualInput.value);
+                const isActualMode = !isNaN(finalExamScoreVal);
+
+                if (isActualMode) finalExamScoreDisplay.textContent = finalExamScoreVal.toFixed(2);
+                else finalExamScoreDisplay.textContent = '—';
+
+                document.querySelectorAll('.input-row').forEach(row => {
+                    const s = parseFloat(row.querySelector('.grade-score').value);
+                    const w = parseFloat(row.querySelector('.grade-weight').value);
+
+                    if (!isNaN(w)) componentWeightTotal += w;
+                    if (!isNaN(s) && !isNaN(w)) {
+                        componentWeightedScoreTotal += (s / 10) * w;
+                        finalWeightedScore += s * (w / 100);
+                    }
+                });
+
+                if (isActualMode) {
+                    if (finalExamWeight > 0) finalWeightedScore += finalExamScoreVal * (finalExamWeight / 100);
+
+                    let status = 'pass', text = 'ĐẠT', msg = '';
+
+                    if (finalExamScoreVal < 1.0) {
+                        status = 'fail'; text = 'RỚT (F)'; msg = `Điểm thi ${finalExamScoreVal} < 1.0 (Điểm liệt)`;
+                    } else if (finalWeightedScore < 4.0) {
+                        status = 'fail'; text = 'RỚT (F)'; msg = `Tổng kết ${finalWeightedScore.toFixed(2)} < 4.0`;
+                    } else {
+                        const info = getGradeInfo(finalWeightedScore);
+                        text = `ĐẠT (${info.letter})`;
+                        msg = info.classification;
+                    }
+                    displayResult(text, status, msg, finalWeightedScore);
+                } else {
+                    displayMinFinalScoreResult(finalExamWeight, finalWeightedScore * 10, componentWeightedScoreTotal, componentWeightTotal);
+                }
+            };
+
+            const displayMinFinalScoreResult = (finalExamWeight, currentPointsRaw, compScorePerc, compWeightTotal) => {
+                if (finalExamWeight <= 0) {
+                    resultDisplay.innerHTML = `<div class="status status-fail">LỖI</div><p>Đã hết % cho bài cuối kỳ!</p>`;
+                    resultContainer.className = `panel result-container fail-border`;
+                    return;
+                }
+
+                const summaryHtml = `
+                    <div class="comp-summary-box">
+                        Thành phần: <span>${parseFloat(compScorePerc.toFixed(2))}%</span> / <span>${compWeightTotal}%</span>
+                    </div>
+                `;
+
+                const thresholds = [
+                    { l: 'A+', t: 9.5 }, { l: 'A', t: 8.5 }, { l: 'A-', t: 8.0 },
+                    { l: 'B+', t: 7.5 }, { l: 'B', t: 7.0 }, { l: 'B-', t: 6.5 },
+                    { l: 'C+', t: 6.0 }, { l: 'C', t: 5.5 }, { l: 'C-', t: 4.5 },
+                    { l: 'D (qua môn)', t: 4.0 }
+                ];
+
+                let html = '';
+                thresholds.forEach(item => {
+                    let needed = (item.t - (currentPointsRaw / 10)) / (finalExamWeight / 100);
+                    let color = 'var(--pass-color)';
+
+                    if (needed > 10) return;
+
+                    let text = '';
+                    if (needed <= 1.0) { text = " ≥ 1.00"; }
+                    else { text = ` ≥ ${needed.toFixed(2)}`; if (needed > 7) color = '#d9534f'; }
+                    html += `<div class="min-score-detail">Điểm chữ ${item.l} <strong style="float:right; color:${color}">${text}</strong></div>`;
+                });
+
+                resultContainer.className = `panel result-container pass-border`;
+                resultDisplay.innerHTML = `<div class="status status-wait">CẦN ĐẠT</div>${summaryHtml}<div style="margin-top:10px;">${html}</div>`;
+            };
+
+            const displayResult = (statusText, statusClass, msg, score) => {
+                resultContainer.className = `panel result-container ${statusClass}-border`;
+                resultDisplay.innerHTML = `<div class="status status-${statusClass}">${statusText}</div><div style="font-size:1.2em; font-weight:bold;">${score ? score.toFixed(2) : ''}</div><p class="message" style="margin-top:10px; font-style:italic;">${msg}</p>`;
+            };
+
+            const getGradeInfo = (score) => {
+                if (score >= 9.5) return { letter: 'A+', classification: 'Xuất sắc' };
+                if (score >= 8.5) return { letter: 'A', classification: 'Giỏi' };
+                if (score >= 8.0) return { letter: 'A-', classification: 'Giỏi' };
+                if (score >= 7.0) return { letter: 'B', classification: 'Khá' };
+                if (score >= 5.5) return { letter: 'C', classification: 'Trung bình' };
+                if (score >= 4.0) return { letter: 'D', classification: 'Trung bình yếu' };
+                return { letter: 'F', classification: 'Kém' };
+            };
+
+            // --- 3. CHỤP ẢNH MÀN HÌNH CHÍNH (FIX NÉT + SCALE) ---
+            // --- 3. CHỤP ẢNH MÀN HÌNH CHÍNH (LUÔN RA GIAO DIỆN PC) ---
+            document.getElementById('copy-btn').addEventListener('click', async function () {
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "📸 Đang xử lý...";
+
+                try {
+                    await new Promise(r => requestAnimationFrame(r));
+
+                    const canvas = await html2canvas(document.querySelector('.main-container'), {
+                        useCORS: true,
+                        scale: 3, // Giảm scale chút cho đỡ nặng nếu máy yếu
+                        backgroundColor: '#f8caca',
+                        windowWidth: 1280, // <--- 1. Ép trình duyệt giả lập màn hình rộng 1280px (PC)
+                        onclone: (doc) => {
+                            const mainContainer = doc.querySelector('.main-container');
+                            const resultPanel = doc.querySelector('.result-panel');
+                            const qrSection = doc.getElementById('qr-capture-section');
+                            const footerTime = doc.getElementById('footer-time-capture');
+                            const totalPercentBar = doc.getElementById('total-percent');
+
+                            // Ẩn các nút không cần thiết
+                            if (totalPercentBar) totalPercentBar.style.display = 'none';
+                            doc.querySelector('.controls').style.display = 'none';
+                            doc.getElementById('final-score-input-container').style.display = 'none';
+                            doc.querySelectorAll('.remove-btn').forEach(b => b.style.display = 'none');
+                            doc.querySelector('.dtu-logo-footer').style.display = 'none';
+
+                            // --- 2. ÉP CSS CẤU TRÚC PC (QUAN TRỌNG NHẤT) ---
+                            // Buộc container xếp ngang (Row) thay vì dọc (Column)
+                            mainContainer.style.display = "flex";
+                            mainContainer.style.flexDirection = "row";
+                            mainContainer.style.alignItems = "flex-start";
+                            mainContainer.style.justifyContent = "center";
+                            mainContainer.style.width = "1100px"; // Set chiều rộng cố định chuẩn PC
+                            mainContainer.style.maxWidth = "none";
+                            mainContainer.style.padding = "30px";
+                            mainContainer.style.gap = "25px";
+                            mainContainer.style.margin = "0 auto";
+
+                            // Xử lý lại phần kết quả cho đẹp
+                            if (qrSection) {
+                                qrSection.style.display = 'block';
+                            }
+
+                            // Fix lỗi panel bị dính sticky khi chụp
+                            resultPanel.style.position = "static";
+                            resultPanel.style.width = "40%"; // Chia tỷ lệ cột phải
+                            doc.querySelector('.input-panel').style.width = "60%"; // Chia tỷ lệ cột trái
+
+                            // Thêm footer thời gian
+                            const now = new Date();
+                            const timeString = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + now.toLocaleDateString('vi-VN');
+                            if (footerTime) {
+                                footerTime.style.display = 'block';
+                                footerTime.style.marginTop = "15px";
+                                footerTime.innerHTML = `<div style="background:white; padding: 10px; border-radius: 8px; border-left: 5px solid #A1242E; display:flex; justify-content:space-between; font-size:12px;"><span style="color:#666;">${timeString}</span><span style="font-style: italic; color: #888;">* Kết quả tham khảo</span></div>`;
+                            }
+                        }
+                    });
+
+                    canvas.toBlob(async (blob) => {
+                        try {
+                            await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+                            showToast("✅ Đã copy ảnh (Giao diện PC)!", "success");
+                        } catch (err) {
+                            // Fallback cho trình duyệt mobile chặn clipboard
+                            console.warn("Clipboard fail, sharing fallback");
+                            // Trên mobile đôi khi write clipboard bị chặn, ta có thể tạo link tải hoặc giữ nguyên logic cũ
+                            showToast("✅ Đã copy ảnh!", "success");
+                        }
+                        btn.innerHTML = originalText;
+                    });
+                } catch (e) {
+                    console.error(e);
+                    alert("Lỗi chụp ảnh: " + e.message);
+                    btn.innerHTML = originalText;
+                }
+            });
+
+            // Init
+            createNewRow(); createNewRow(); createNewRow(); updateUI();
+            document.getElementById('add-row-btn').addEventListener('click', createNewRow);
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                gradeRowsContainer.innerHTML = ''; finalExamScoreManualInput.value = '';
+                createNewRow(); createNewRow(); createNewRow(); updateUI();
+            });
+            finalExamScoreManualInput.addEventListener('change', function () {
+                let v = parseFloat(this.value);
+                if (v < 0 || v > 10) { this.value = ''; showToast("⚠️ Điểm thi chỉ từ 0-10", "fail"); }
+                calculateAndDisplay();
+            });
+            finalExamScoreManualInput.addEventListener('input', calculateAndDisplay);
+
+            // LẮNG NGHE SỰ KIỆN BLUR ĐỂ XÓA KHI NHẬP SAI Ở MODAL
+            const qcScoreInput = document.getElementById('qc-score-percent');
+            const qcWeightInput = document.getElementById('qc-weight-percent');
+            const qcMsgBox = document.getElementById('qc-message-box');
+
+            const handleBlur = (input) => {
+                const s = parseFloat(document.getElementById('qc-score-percent').value);
+                const w = parseFloat(document.getElementById('qc-weight-percent').value);
+                if (s > w) {
+                    input.value = ""; // Xóa trắng
+                    qcMsgBox.innerHTML = "<strong style='color:#dc3545'>😤 Lì lợm quá! Tôi xóa luôn rồi đó. Nhập lại đi!</strong>";
+                }
+            };
+
+            qcScoreInput.addEventListener('blur', function () { handleBlur(this); });
+        });
+
+        const showToast = (msg, type) => {
+            const toast = document.getElementById('toast-notification');
+            toast.textContent = msg;
+            toast.style.background = type === "success" ? "linear-gradient(135deg, #6f42c1, #a1242e)" : "#dc3545";
+            toast.className = "show";
+            setTimeout(() => { toast.className = ""; }, 3000);
+        };
+
+        // --- HÀM TÍNH NHANH ---
+        function toggleQuickCalc() {
+            const m = document.getElementById('quickCalcModal');
+            if (m.style.display !== 'flex') {
+                document.getElementById('qc-score-percent').value = '';
+                document.getElementById('qc-weight-percent').value = '';
+                document.getElementById('qc-summary-display').style.display = 'none';
+                document.getElementById('qc-result-area').style.display = 'none';
+                document.getElementById('qc-message-box').innerHTML = '';
+                document.getElementById('qc-table-body').innerHTML = '';
+            }
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        const insults = [
+            "😏 Ảo tưởng à? Điểm đạt sao lớn hơn trọng số được?",
+            "🧠 Học lại Toán cấp 1 đi cưng! Nhập bậy bạ!",
+            "😡 Đừng có chọc tức tôi! Sửa lại mau!",
+            "👀 Mắt để đâu vậy? Trọng số có chút xíu mà đòi điểm cao hơn?",
+            "🤡 Em là danh hài à? Nhập lại đàng hoàng coi!"
+        ];
+
+        function calculateQuickGrade() {
+            const scoreInput = document.getElementById('qc-score-percent');
+            const weightInput = document.getElementById('qc-weight-percent');
+
+            let scorePerc = parseFloat(scoreInput.value);
+            let weightPerc = parseFloat(weightInput.value);
+
+            if (weightPerc > 100) { weightInput.value = ''; weightPerc = NaN; }
+            if (scorePerc > 100) { scoreInput.value = ''; scorePerc = NaN; }
+
+            const summary = document.getElementById('qc-summary-display');
+            const resultArea = document.getElementById('qc-result-area');
+            const tableBody = document.getElementById('qc-table-body');
+            const msgBox = document.getElementById('qc-message-box');
+            const captureBtn = document.getElementById('qc-capture-btn');
+
+            if (!isNaN(scorePerc) && !isNaN(weightPerc)) {
+                summary.style.display = 'block';
+                summary.innerHTML = `Đã tích lũy: <span>${scorePerc}%</span> / Tổng thành phần: <span>${weightPerc}%</span>`;
+
+                if (scorePerc > weightPerc) {
+                    const randomMsg = insults[Math.floor(Math.random() * insults.length)];
+                    msgBox.innerHTML = `<strong style='color:red; font-size:1.1em;'>${randomMsg}</strong>`;
+
+                    resultArea.style.display = 'block'; tableBody.innerHTML = "";
+                    captureBtn.style.display = "none";
+                    return;
+                }
+            } else { summary.style.display = 'none'; return; }
+
+            resultArea.style.display = 'block';
+            captureBtn.style.display = "block";
+            const finalWeight = 100 - weightPerc;
+
+            if (finalWeight <= 0) { msgBox.innerHTML = "Đã đủ 100% trọng số!"; tableBody.innerHTML = ""; return; }
+
+            msgBox.innerHTML = `Thi cuối kỳ chiếm: <strong style="color:#A1242E">${finalWeight}%</strong>`;
+
+            // Danh sách điểm mốc
+            const targets = [
+                { l: 'A+', s: 9.5 }, { l: 'A', s: 8.5 }, { l: 'A-', s: 8.0 },
+                { l: 'B+', s: 7.5 }, { l: 'B', s: 7.0 }, { l: 'B-', s: 6.5 },
+                { l: 'C+', s: 6.0 }, { l: 'C', s: 5.5 }, { l: 'C-', s: 4.5 },
+                { l: 'D (qua môn)', s: 4.0 }
+            ];
+
+            let html = '';
+            const currentScoreRaw = scorePerc / 10;
+
+            targets.forEach(t => {
+                let needed = (t.s - currentScoreRaw) / (finalWeight / 100);
+                if (needed > 10) return; // Nếu cần > 10 điểm thì không hiện (vì không thể đạt)
+
+                let valHtml = '', color = '#333';
+                if (needed <= 1.0) {
+                    valHtml = '> 1.00 (tránh liệt)';
+                    color = '#28a745';
+                } else {
+                    valHtml = `≥ ${needed.toFixed(2)}`;
+                    if (needed > 7) color = '#d63384';
+                }
+
+                // --- ĐÃ CHỈNH SỬA: Xóa phần (${t.s}) ---
+                html += `<tr>
+                            <td>Điểm chữ <strong>${t.l}</strong></td>
+                            <td style="text-align:right; color:${color}; font-weight:bold;">${valHtml}</td>
+                         </tr>`;
+            });
+
+            if (html === '') html = "<tr><td colspan='2' style='color:red; text-align:center;'>Rớt chắc rồi! (Cần > 10đ)</td></tr>";
+            tableBody.innerHTML = html;
+        }
+
+        // --- LOGIC CHỤP ẢNH: FIX LỖI TRẮNG + SIÊU NÉT (V3) ---
+        async function captureQuickCalcModal() {
+            const captureBtn = document.getElementById('qc-capture-btn');
+            const originalText = captureBtn.innerHTML;
+
+            // 1. Khóa nút để tránh bấm nhiều lần
+            captureBtn.innerHTML = "📸 Đang xử lý...";
+            captureBtn.disabled = true;
+
+            try {
+                // --- BƯỚC 1: CHUẨN BỊ DỮ LIỆU ---
+                // Lấy giá trị thực tế người dùng đã nhập
+                const valWeight = document.getElementById('qc-weight-percent').value || "0";
+                const valScore = document.getElementById('qc-score-percent').value || "0";
+                // Lấy phần bảng kết quả
+                const tableContent = document.getElementById('qc-table-body').innerHTML;
+                const messageContent = document.getElementById('qc-message-box').innerHTML;
+                const summaryContent = document.getElementById('qc-summary-display').innerHTML;
+
+                // --- BƯỚC 2: VẼ LẠI GIAO DIỆN CHỤP (KHÔNG CLONE, VẼ MỚI CHO NÉT) ---
+                // Tạo khung chứa (Wrapper)
+                const wrapper = document.createElement('div');
+                Object.assign(wrapper.style, {
+                    position: 'fixed',
+                    top: '0',
+                    left: '0',
+                    zIndex: '-100', // Nằm dưới cùng để người dùng không thấy bị nháy
+                    width: '1000px', // Đặt rộng 1000px để ảnh ra HD
+                    display: 'flex',
+                    backgroundColor: '#f8caca',
+                    fontFamily: "'Be Vietnam Pro', sans-serif",
+                    opacity: '1', // Bắt buộc phải là 1 để không bị trắng ảnh
+                    pointerEvents: 'none' // Không chặn chuột của user
+                });
+
+                // HTML cho khung chụp (Chia 2 cột: Trái Tính điểm - Phải QR)
+                wrapper.innerHTML = `
+            <div style="width: 65%; padding: 40px; background-color: transparent;">
+                <h2 style="text-align: center; color: #A1242E; margin: 0 0 20px 0; font-size: 28px; font-weight: 800;">⚡ TÍNH NHANH</h2>
+                
+                <div style="background: #e3f2fd; color: #0d47a1; padding: 15px; border-radius: 10px; text-align: center; font-weight: 700; font-size: 18px; margin-bottom: 25px; border: 1px dashed #2196f3;">
+                    ${summaryContent}
+                </div>
+
+                <div style="display: flex; gap: 20px; margin-bottom: 25px;">
+                    <div style="flex: 1;">
+                        <div style="text-align:center; margin-bottom:8px; font-weight:600; color:#555; font-size:16px;">Tổng thành phần (%)</div>
+                        <div style="background: white; border: 2px solid #ddd; border-radius: 10px; padding: 15px; text-align: center; font-size: 30px; font-weight: 800; color: #A1242E;">
+                            ${valWeight}
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="text-align:center; margin-bottom:8px; font-weight:600; color:#555; font-size:16px;">Điểm đã đạt (%)</div>
+                         <div style="background: white; border: 2px solid #ddd; border-radius: 10px; padding: 15px; text-align: center; font-size: 30px; font-weight: 800; color: #A1242E;">
+                            ${valScore}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px; text-align: center; font-size: 18px;">
+                    ${messageContent}
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 18px;">
+                    ${tableContent}
+                </table>
+                
+                <style>
+                    /* Style nội bộ cho bảng lúc chụp */
+                    td { padding: 10px 5px; border-bottom: 1px dashed #ccc; }
+                </style>
+            </div>
+
+            <div style="width: 35%; background-color: transparent; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+                <div style="font-weight: 900; color: #A1242E; font-size: 26px; margin-bottom: 20px; text-transform: uppercase;">CỘNG ĐỒNG DTU</div>
+                
+                <div style="padding: 10px; border: none; background: transparent;"> 
+                    <img src="maqrtelegram.jpg" style="width: 400px; height: 400px; display: block; object-fit: contain;">
+                </div>
+                
+                <div style="margin-top: 20px; font-weight: 700; color: #333; font-size: 20px;">@chatsinhvienDTU</div>
+            </div>
+        `;
+
+                document.body.appendChild(wrapper);
+
+                // --- BƯỚC 3: THỰC HIỆN CHỤP ---
+                // Chờ 300ms để trình duyệt vẽ xong DOM
+                await new Promise(r => setTimeout(r, 300));
+
+                const canvas = await html2canvas(wrapper, {
+                    scale: 3, // Giữ scale 3 để ảnh nét
+                    useCORS: true,
+                    backgroundColor: '#f8caca',
+                    width: 1000, // Khớp width wrapper
+                    windowWidth: 1920,
+                    logging: false
+                });
+
+                // --- BƯỚC 4: XUẤT ẢNH ---
+                canvas.toBlob(async (blob) => {
+                    if (!blob) {
+                        alert("Lỗi tạo ảnh!");
+                    } else {
+                        try {
+                            const item = new ClipboardItem({ "image/png": blob });
+                            await navigator.clipboard.write([item]);
+                            showToast("✅ Đã copy ảnh (Nét căng)!", "success");
+                        } catch (err) {
+                            showToast("✅ Đã chụp xong (Lỗi copy tự động)!", "success");
+                        }
+                    }
+
+                    // Dọn dẹp hiện trường
+                    if (document.body.contains(wrapper)) {
+                        document.body.removeChild(wrapper);
+                    }
+                    captureBtn.innerHTML = originalText;
+                    captureBtn.disabled = false;
+                }, 'image/png');
+
+            } catch (e) {
+                console.error(e);
+                alert("Lỗi: " + e.message);
+                captureBtn.innerHTML = originalText;
+                captureBtn.disabled = false;
+                // Xóa wrapper nếu lỗi 
+                const w = document.body.querySelector('div[style*="z-index: -100"]');
+                if (w) w.remove();
+            }
+        }
+    </script>
+</body>
+
+</html>
