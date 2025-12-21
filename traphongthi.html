@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Danh sách thi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --dtu-red: #d32f2f;
+            --text-black: #000000;
+            --text-grey: #555555;
+            --bg-page: linear-gradient(135deg, #e0f2f1 0%, #fce4ec 100%);
+            --toast-success: #00b894;
+            --toast-info: #0984e3;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-page);
+            overflow: hidden;
+        }
+
+        /* TOAST */
+        #toast-container {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            min-width: 240px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #2d3436;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(120%);
+            transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 5px solid #ccc;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: var(--toast-success);
+        }
+
+        .toast.info {
+            border-left-color: var(--toast-info);
+        }
+
+        /* LAYOUT CHÍNH */
+        .app-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(15px);
+            padding: 20px;
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            color: var(--dtu-red);
+            font-weight: 800;
+            text-align: center;
+            margin: 0;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 11px;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 35px 10px 10px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background: #fff;
+            font-weight: 700;
+        }
+
+        input:focus {
+            border-color: var(--dtu-red);
+            outline: none;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            background: #f1f2f6;
+            color: #888;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .btn-copy-all {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            background: #673ab7;
+            color: white;
+            font-size: 13px;
+            display: none;
+            margin-top: auto;
+            transition: 0.2s;
+        }
+
+        /* VÙNG HIỂN THỊ KẾT QUẢ - CUỘN NGANG TRÊN PC */
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            /* Hàng ngang cho PC */
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+            height: 100%;
+            overflow-x: auto;
+            /* Cuộn ngang */
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* CARD KẾT QUẢ */
+        .result-card {
+            background: #ffffff;
+            min-width: 380px;
+            max-width: 400px;
+            padding: 25px 30px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            position: relative;
+            animation: fadeIn 0.3s ease;
+            box-sizing: border-box;
+            border: 1px solid #eee;
+            flex-shrink: 0;
+            /* Không cho co lại */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--dtu-red);
+            border-radius: 18px 18px 0 0;
+        }
+
+        .info-title {
+            text-align: center;
+            color: var(--dtu-red);
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+            align-items: center;
+        }
+
+        .info-row:last-child {
+            border: none;
+        }
+
+        .lbl {
+            color: var(--text-grey);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .val {
+            font-weight: 800;
+            color: var(--text-black);
+            text-align: right;
+        }
+
+        .highlight-box {
+            background: #fffdf0;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid #feeb95;
+            margin-top: 10px;
+        }
+
+        .excel-badge {
+            background: #ffcdd2;
+            color: #c62828;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .stt-red {
+            color: var(--dtu-red);
+            font-size: 22px;
+            font-weight: 900;
+        }
+
+        .warning-note {
+            color: var(--dtu-red) !important;
+            font-weight: 900 !important;
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0.2;
+            }
+        }
+
+        /* ĐIỆN THOẠI - CUỘN DỌC */
+        @media (max-width: 850px) {
+
+            body,
+            html {
+                overflow: auto;
+                height: auto;
+            }
+
+            .app-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .sidebar {
+                padding: 20px;
+                height: auto;
+                border-bottom: 1px solid #eee;
+            }
+
+            .main-content {
+                flex-direction: column;
+                /* Hàng dọc cho Mobile */
+                padding: 15px 10px;
+                min-height: 400px;
+                overflow-x: hidden;
+                overflow-y: visible;
+                align-items: center;
+            }
+
+            .result-card {
+                min-width: 95%;
+                max-width: 95%;
+                padding: 20px;
+            }
+
+            .btn-copy-all {
+                display: block;
+                margin-top: 15px;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+    <div class="app-container">
+        <div class="sidebar">
+            <h2>DANH SÁCH THI</h2>
+            <div class="form-group">
+                <label>1. Tải tệp (Excel/PDF):</label>
+                <input type="file" id="fileIn" accept=".xlsx, .xls, .pdf">
+            </div>
+            <div class="form-group">
+                <label>2. Nhập Mã SV (cách nhau dấu ,):</label>
+                <div class="input-wrapper">
+                    <input type="text" id="mssvIn" placeholder="Ví dụ: 123, 456..." autocomplete="off">
+                    <div id="clearBtn" class="clear-btn" onclick="clearInput()">✕</div>
+                </div>
+            </div>
+            <button class="btn-copy-all" id="copyBtn" onclick="showToast('Chỉ hỗ trợ chụp từng thẻ trên PC', 'info')">📸
+                CHỤP KẾT QUẢ</button>
+        </div>
+
+        <div class="main-content" id="resultsArea">
+            <div id="emptyView"
+                style="color: rgba(0,0,0,0.1); font-size: 20px; font-weight: 900; text-align: center; width: 100%;">🚀
+                SẴN SÀNG</div>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        let db = [];
+        let isPDF = false;
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        document.getElementById('fileIn').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            db = [];
+            isPDF = file.name.toLowerCase().endsWith('.pdf');
+            if (isPDF) await processPDF(file);
+            else await processExcel(file);
+        });
+
+        async function processExcel(file) {
+            try {
+                const data = await file.arrayBuffer();
+                const wb = XLSX.read(data, { type: 'array' });
+                db = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
+                showToast(`📂 Đã tải Excel: ${file.name}`, 'success');
+                autoSearch();
+            } catch (err) { showToast("Lỗi nạp Excel", "info"); }
+        }
+
+        async function processPDF(file) {
+            showToast("⏳ Đang giải mã PDF...", "info");
+            try {
+                const reader = new FileReader();
+                reader.onload = async function () {
+                    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(this.result) }).promise;
+                    let allRows = [];
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        const lines = {};
+                        content.items.forEach(item => {
+                            const y = Math.round(item.transform[5] / 2) * 2;
+                            if (!lines[y]) lines[y] = [];
+                            lines[y].push(item);
+                        });
+                        const sortedY = Object.keys(lines).sort((a, b) => b - a);
+                        sortedY.forEach(y => {
+                            const rowItems = lines[y].sort((a, b) => a.transform[4] - b.transform[4]);
+                            allRows.push(rowItems.map(it => it.str.trim()).filter(s => s !== ""));
+                        });
+                    }
+                    db = allRows;
+                    showToast(`📂 Đã tải PDF: ${file.name}`, 'success');
+                    autoSearch();
+                };
+                reader.readAsArrayBuffer(file);
+            } catch (err) { showToast("Lỗi nạp PDF", "info"); }
+        }
+
+        document.getElementById('mssvIn').addEventListener('input', autoSearch);
+
+        function clearInput() {
+            document.getElementById('mssvIn').value = '';
+            showToast("🧹 Đã xóa mã số", "info");
+            autoSearch();
+            document.getElementById('mssvIn').focus();
+        }
+
+        function autoSearch() {
+            const inputVal = document.getElementById('mssvIn').value.trim();
+            const resultsArea = document.getElementById('resultsArea');
+            const empty = document.getElementById('emptyView');
+            const clearBtn = document.getElementById('clearBtn');
+
+            clearBtn.style.display = inputVal ? "flex" : "none";
+            resultsArea.innerHTML = ""; // Xóa kết quả cũ
+
+            if (!inputVal || !db.length) {
+                resultsArea.appendChild(empty);
+                empty.style.display = "block";
+                return;
+            }
+
+            // TÁCH CÁC MSSV THEO DẤU PHẨY
+            const keys = inputVal.split(',').map(s => s.trim()).filter(s => s !== "");
+
+            let hasResult = false;
+            keys.forEach(key => {
+                let foundIdx = db.findIndex(row => row.some(cell => String(cell) === key));
+
+                if (foundIdx !== -1) {
+                    hasResult = true;
+                    renderCard(foundIdx, key);
+                }
+            });
+
+            if (!hasResult) {
+                resultsArea.appendChild(empty);
+                empty.innerText = "🔍 Không tìm thấy mã số nào!";
+            }
+        }
+
+        function renderCard(foundIdx, key) {
+            const resultsArea = document.getElementById('resultsArea');
+            const sv = db[foundIdx];
+
+            // Tìm Header
+            let header = "";
+            for (let j = foundIdx; j >= 0; j--) {
+                const rowText = db[j].join(" ");
+                if (rowText.includes("Thời gian:")) { header = rowText; break; }
+            }
+
+            let d = "---", t = "---", p = "---", cs = "---";
+            if (header) {
+                const timeMatch = header.match(/Thời gian:\s*([\d|h|:]+)\s*-\s*([\d|\/]+)/);
+                if (timeMatch) { t = timeMatch[1]; d = timeMatch[2]; }
+                const roomMatch = header.match(/Phòng:\s*([^-]+)-\s*(.*)/);
+                if (roomMatch) { p = roomMatch[1].trim(); cs = roomMatch[2].trim(); }
+            }
+
+            let name = "", lopHP = "", stt = "", ghiChu = "";
+            if (isPDF) {
+                let idIdx = sv.findIndex(cell => String(cell) === key);
+                stt = sv[idIdx - 1] || "---";
+                name = ((sv[idIdx + 1] || "") + " " + (sv[idIdx + 2] || "")).trim();
+                lopHP = sv[idIdx + 3] || "---";
+                ghiChu = sv.find(c => c.toLowerCase().includes("nợ")) || "";
+            } else {
+                name = (sv[3] + " " + (sv[4] || "")).trim();
+                lopHP = sv[5] || "---";
+                stt = sv[1] || sv[0];
+                ghiChu = sv[7] || sv[6] || "";
+            }
+
+            let warnClass = (ghiChu.toLowerCase().includes("nợ") || ghiChu.toLowerCase().includes("hp")) ? "warning-note" : "";
+
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `
+                <div class="info-title">TÌM PHÒNG THI</div>
+                <div class="info-row"><span class="lbl">Ngày thi:</span><span class="val">${d}</span></div>
+                <div class="info-row"><span class="lbl">Giờ thi:</span><span class="val">${t}</span></div>
+                <div class="info-row"><span class="lbl">Phòng thi:</span><span class="val">${p}</span></div>
+                <div class="info-row"><span class="lbl">Cơ sở:</span><span class="val">${cs}</span></div>
+                <div class="highlight-box">
+                    <div class="info-row"><span class="lbl">Tệp xác thực:</span><span class="val"><span class="excel-badge">${isPDF ? "PDF" : "Excel"} dòng ${foundIdx + 1}</span></span></div>
+                    <div class="info-row"><span class="lbl">MSSV:</span><span class="val">${key}</span></div>
+                    <div class="info-row"><span class="lbl">Họ tên:</span><span class="val">${name}</span></div>
+                    <div class="info-row"><span class="lbl">LỚP HỌC PHẦN:</span><span class="val">${lopHP}</span></div>
+                    <div class="info-row"><span class="lbl">Ghi chú:</span><span class="val ${warnClass}">${ghiChu || "---"}</span></div>
+                    <div class="info-row"><span class="lbl">STT trong phòng:</span><span class="val stt-red">${stt}</span></div>
+                </div>
+                <button onclick="copySingleCard(this.parentElement)" style="width:100%; margin-top:15px; border:none; background:#eee; padding:8px; border-radius:5px; cursor:pointer; font-weight:700;">📋 CHỤP THẺ NÀY</button>
+            `;
+            resultsArea.appendChild(card);
+        }
+
+        async function copySingleCard(el) {
+            const btn = el.querySelector('button');
+            btn.innerText = "⏳ ĐANG CHỤP...";
+            // Ẩn nút chụp trong ảnh
+            btn.style.visibility = "hidden";
+
+            const canvas = await html2canvas(el, { scale: 5, backgroundColor: "#ffffff", useCORS: true });
+            canvas.toBlob(blob => {
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.write([item]).then(() => {
+                    showToast("📋 Đã copy ảnh thẻ này!", "success");
+                    btn.innerText = "📋 CHỤP THẺ NÀY";
+                    btn.style.visibility = "visible";
+                });
+            }, 'image/png', 1.0);
+        }
+    </script>
+</body>
+
+</html>
