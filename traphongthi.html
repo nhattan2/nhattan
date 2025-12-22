@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tra Cứu Lịch Thi DTU</title>
+    <title>TRA PHÒNG THI</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -14,22 +14,33 @@
             --bg-page: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
 
-        /* --- MAGIC: ẨN TOÀN BỘ THANH CUỘN NHƯNG VẪN CUỘN ĐƯỢC --- */
-        * {
-            -ms-overflow-style: none;
-            /* IE and Edge */
-            scrollbar-width: none;
-            /* Firefox */
+        /* --- CẤU HÌNH THANH CUỘN (SCROLLBAR) MỚI --- */
+        /* Cho phép cuộn mượt mà */
+        html {
+            scroll-behavior: smooth;
         }
 
-        *::-webkit-scrollbar {
-            display: none;
-            /* Chrome, Safari and Opera */
-            width: 0;
-            height: 0;
+        /* Tùy chỉnh thanh cuộn cho Webkit (Chrome, Edge, Safari) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 10px;
+            /* Chiều cao cho thanh cuộn ngang */
         }
 
-        /* --- CẤU HÌNH CHUNG --- */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
         body,
         html {
             margin: 0;
@@ -39,10 +50,8 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            /* KHÓA CỨNG MÀN HÌNH CHÍNH */
         }
 
-        /* --- CẤU HÌNH PC (>850px) --- */
         @media (min-width: 851px) {
             .app-container {
                 display: grid;
@@ -53,23 +62,24 @@
 
             .sidebar {
                 height: 100vh;
-                overflow-y: scroll;
-                /* Cho phép lăn chuột */
+                overflow-y: auto;
                 border-right: 1px solid #ddd;
-                box-shadow: 2px 0 15px rgba(0, 0, 0, 0.05);
                 display: flex;
                 flex-direction: column;
             }
 
+            /* Main content cho phép cuộn ngang (auto) */
             .main-content {
                 height: 100vh;
-                overflow-x: scroll;
-                /* Cho phép lăn ngang */
+                overflow-x: auto;
+                /* Hiện thanh cuộn khi cần */
                 overflow-y: hidden;
                 display: flex;
                 align-items: flex-start;
                 gap: 25px;
                 white-space: nowrap;
+                padding-bottom: 20px;
+                /* Chừa chỗ cho thanh cuộn */
             }
 
             .card {
@@ -91,15 +101,12 @@
             }
         }
 
-        /* --- CẤU HÌNH MOBILE (< 850px) --- */
         @media (max-width: 850px) {
             .app-container {
                 display: flex;
                 flex-direction: column;
                 height: 100vh;
-                /* Mobile cũng khóa 1 màn hình nếu muốn giống App */
-                overflow-y: scroll;
-                /* Mobile cho phép cuộn toàn thân */
+                overflow-y: auto;
             }
 
             .sidebar {
@@ -139,7 +146,6 @@
             }
         }
 
-        /* --- STYLE CHI TIẾT --- */
         .sidebar {
             background: #fff;
             padding: 20px;
@@ -181,12 +187,13 @@
             padding: 12px;
             border: 2px solid #ccc;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
             font-family: monospace;
             font-weight: bold;
             color: #333;
             box-sizing: border-box;
-            overflow-y: scroll;
+            overflow-y: auto;
+            /* Cho phép cuộn dọc trong ô nhập */
         }
 
         textarea#mssvIn:focus {
@@ -205,7 +212,7 @@
             border-radius: 8px;
             margin-top: 2px;
             max-height: 150px;
-            overflow-y: scroll;
+            overflow-y: auto;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
             display: none;
             z-index: 1000;
@@ -291,7 +298,6 @@
             box-sizing: border-box;
         }
 
-        /* HƯỚNG DẪN */
         .guide-wrapper {
             width: 100%;
             height: 100%;
@@ -385,7 +391,6 @@
             padding: 5px;
         }
 
-        /* CARD STYLE - TỐI ƯU ẢNH NÉT (Scale 6 + No Shadow) */
         .card {
             background: #fff;
             border-radius: 16px;
@@ -426,19 +431,21 @@
         .row {
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 8px;
             border-bottom: 1px dashed #eee;
             padding-bottom: 5px;
             font-size: 14px;
         }
 
-        /* CHỮ ĐEN - KHÔNG BÓNG */
         .val {
             font-weight: 800;
             color: #000;
             text-align: right;
             max-width: 65%;
-            word-break: break-word;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.4;
         }
 
         .hl-box {
@@ -471,7 +478,6 @@
             margin-top: 5px;
         }
 
-        /* TOAST */
         #toast-box {
             position: fixed;
             top: 20px;
@@ -517,14 +523,14 @@
     <div id="toast-box"></div>
     <div class="app-container">
         <div class="sidebar">
-            <h2>TRA CỨU THI DTU</h2>
+            <h2>TRA PHÒNG THI NHANH</h2>
             <div style="margin-bottom: 10px;">
                 <label class="label">1. Dán Link Online:</label>
                 <div style="display:flex;">
                     <input type="text" id="urlIn" placeholder="Link PDF/Excel..." autocomplete="off">
                     <button class="btn-clear-link" onclick="resetAll()" title="Xóa Link">✕</button>
                 </div>
-                <button class="btn-paste" id="btnLink" onclick="pasteAndLoad()">🚀 DÁN & TẢI</button>
+                <button class="btn-paste" id="btnLink" onclick="pasteAndLoad()">🚀 DÁN</button>
             </div>
             <div style="text-align:center; font-size:10px; color:#aaa; font-weight:bold; margin: 5px 0;">--- HOẶC ---
             </div>
@@ -535,8 +541,8 @@
             <hr style="width:100%; border:0; border-top:1px solid #eee; margin-bottom: 15px;">
             <div class="input-wrapper">
                 <label class="label" style="color:var(--dtu-red);">3. Nhập MSSV (Dán nhiều dòng):</label>
-                <textarea id="mssvIn" placeholder="Nhập hoặc dán danh sách MSSV...&#10;Hỗ trợ tìm 5 số cuối (VD: 34567)"
-                    disabled></textarea>
+                <textarea id="mssvIn" inputmode="decimal"
+                    placeholder="Nhập MSSV (Phân cách bằng Enter, dấu phẩy, hoặc chấm)..." disabled></textarea>
                 <div id="suggestions" class="suggestion-list"></div>
                 <button class="btn-del-all" onclick="clearMSSVOnly()">🗑️ XÓA DANH SÁCH</button>
             </div>
@@ -552,7 +558,7 @@
                             <div class="guide-body">1. Vào trang danh sách thi tại phòng đào tạo Duy Tân.<br>2. Chuột
                                 phải tên file lịch
                                 thi.<br>3. Chọn <span class="hl">Sao chép địa chỉ liên kết</span>.<br>4. Dán vào ô số 1
-                                và ấn <b>🚀 DÁN & TẢI</b>.</div>
+                                và ấn <b>🚀 DÁN</b>.</div>
                         </div>
                         <div class="guide-step">
                             <div class="guide-head" style="color:#27ae60;">📂 CÁCH 2: DÙNG FILE</div>
@@ -572,7 +578,7 @@
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-        let db = []; let isPDF = false;
+        let db = []; let isPDF = false; let processedExams = new Set();
 
         window.onload = () => { resetAll(); }
 
@@ -584,7 +590,14 @@
         }
 
         function resetAll() { document.getElementById('urlIn').value = ''; document.getElementById('fileIn').value = ''; clearMSSVOnly(); }
-        function clearMSSVOnly() { document.getElementById('mssvIn').value = ''; document.getElementById('suggestions').style.display = 'none'; document.getElementById('mssvIn').focus(); showGuide(true); }
+
+        function clearMSSVOnly() {
+            document.getElementById('mssvIn').value = '';
+            document.getElementById('suggestions').style.display = 'none';
+            document.getElementById('mssvIn').focus();
+            showGuide(true);
+        }
+
         function showGuide(show) {
             const area = document.getElementById('resultArea'); const guide = document.getElementById('guideView');
             if (show) { Array.from(area.children).forEach(child => { if (child.id !== 'guideView') area.removeChild(child); }); guide.style.display = 'flex'; } else { guide.style.display = 'none'; }
@@ -606,7 +619,7 @@
                     success = true; break;
                 } catch (e) { }
             }
-            btn.disabled = false; btn.innerText = "🚀 DÁN & TẢI";
+            btn.disabled = false; btn.innerText = "🚀 DÁN";
             if (!success) { toast("❌ Link chặn. Tải file về máy!", "t-err"); window.open(url, '_blank'); }
         }
 
@@ -616,10 +629,32 @@
             try { if (isPDF) await parsePDF(f); else await parseExcel(f); } catch (e) { toast("Lỗi file!", "t-err"); }
         });
 
+        // --- HÀM EXCEL MỚI: FIX LỖI SỐ DÒNG (DÙNG !ref) ---
         async function parseExcel(blob) {
-            const data = await blob.arrayBuffer(); const wb = XLSX.read(data, { type: 'array' });
-            db = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
-            toast(`📂 Đã nạp Excel`, "t-ok"); enableInput();
+            const data = await blob.arrayBuffer();
+            const wb = XLSX.read(data, { type: 'array' });
+            db = [];
+
+            wb.SheetNames.forEach(sheetName => {
+                const sheet = wb.Sheets[sheetName];
+                // Tính toán dòng bắt đầu dựa trên vùng dữ liệu (Range)
+                // Ví dụ: A3:E100 -> startRow = 2 (dòng 3)
+                let startRow = 0;
+                if (sheet['!ref']) {
+                    const range = XLSX.utils.decode_range(sheet['!ref']);
+                    startRow = range.s.r;
+                }
+
+                const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+                sheetData.forEach((row, index) => {
+                    row._sheetName = sheetName;
+                    // CHỈNH LẠI CÁCH TÍNH SỐ DÒNG
+                    row._realRowIndex = startRow + index + 1;
+                    db.push(row);
+                });
+            });
+            toast(`📂 Đã nạp ${wb.SheetNames.length} môn thi`, "t-ok"); enableInput();
         }
 
         async function parsePDF(blob) {
@@ -628,7 +663,10 @@
             for (let i = 1; i <= pdf.numPages; i++) {
                 const p = await pdf.getPage(i); const c = await p.getTextContent();
                 const l = {}; c.items.forEach(it => { const y = Math.round(it.transform[5] / 2) * 2; if (!l[y]) l[y] = []; l[y].push(it); });
-                Object.keys(l).sort((a, b) => b - a).forEach(y => { tmp.push(l[y].sort((a, b) => a.transform[4] - b.transform[4]).map(x => x.str.trim()).filter(s => s !== "")); });
+                Object.keys(l).sort((a, b) => b - a).forEach(y => {
+                    let row = l[y].sort((a, b) => a.transform[4] - b.transform[4]).map(x => x.str.trim()).filter(s => s !== "");
+                    row._sheetName = "File PDF"; tmp.push(row);
+                });
             }
             db = tmp; toast(`📂 Đã nạp PDF`, "t-ok"); enableInput();
         }
@@ -637,22 +675,40 @@
 
         const inputEl = document.getElementById('mssvIn');
         const suggestDiv = document.getElementById('suggestions');
+
         inputEl.addEventListener('input', (e) => {
-            let val = e.target.value; val = val.replace(/[^0-9,.\s]/g, ''); e.target.value = val;
-            handleSuggestions(val); autoSearch(val);
+            let val = e.target.value;
+            val = val.replace(/[^0-9\n.,]/g, '');
+            e.target.value = val;
+            const tokens = val.split(/[^0-9]+/);
+            const lastToken = tokens[tokens.length - 1];
+            handleSuggestions(lastToken);
+            autoSearch(val);
         });
 
         function handleSuggestions(val) {
-            const tokens = val.split(/[,.\s]+/); const lastToken = tokens[tokens.length - 1].trim();
-            if (!lastToken || !db.length || lastToken.length < 2) { suggestDiv.style.display = "none"; return; }
+            if (!val || !db.length || val.length < 3) { suggestDiv.style.display = "none"; return; }
             const matches = new Set();
-            for (let row of db) { for (let cell of row) { const s = String(cell).trim(); if (s.startsWith(lastToken) && s.length > 5 && !isNaN(s)) matches.add(s); } if (matches.size > 5) break; }
+            for (let row of db) {
+                let mssvCell = row.find(c => !isNaN(String(c)) && String(c).length > 5);
+                if (mssvCell) {
+                    let s = String(mssvCell).trim();
+                    if (s.startsWith(val)) matches.add(s);
+                }
+                if (matches.size >= 5) break;
+            }
             if (matches.size > 0) {
                 suggestDiv.innerHTML = ""; suggestDiv.style.display = "block";
                 matches.forEach(m => {
                     const d = document.createElement('div'); d.className = 'suggestion-item';
-                    d.innerHTML = `<span class="match-text">${lastToken}</span>${m.substring(lastToken.length)}`;
-                    d.onclick = () => { tokens[tokens.length - 1] = m; inputEl.value = tokens.join('\n'); suggestDiv.style.display = "none"; autoSearch(inputEl.value); inputEl.focus(); };
+                    d.innerHTML = `<span class="match-text">${val}</span>${m.substring(val.length)}`;
+                    d.onclick = () => {
+                        let currentText = inputEl.value;
+                        inputEl.value = currentText.replace(/\d+$/, m);
+                        suggestDiv.style.display = "none";
+                        autoSearch(inputEl.value);
+                        inputEl.focus();
+                    };
                     suggestDiv.appendChild(d);
                 });
             } else suggestDiv.style.display = "none";
@@ -661,59 +717,106 @@
         function autoSearch(val) {
             const keys = val.split(/[^0-9]+/).filter(k => k.length >= 3);
             if (keys.length === 0) { showGuide(true); return; }
+
             const guide = document.getElementById('guideView'); if (guide) guide.style.display = 'none';
             const area = document.getElementById('resultArea');
             Array.from(area.children).forEach(child => { if (child.id !== 'guideView') area.removeChild(child); });
+
+            processedExams.clear();
+
             db.forEach((row) => {
                 const matchKey = keys.find(k => {
-                    return row.some(cell => { const s = String(cell).trim(); return s === k || (k.length === 5 && s.endsWith(k) && s.length > 5); });
+                    return row.some(cell => {
+                        const s = String(cell).trim();
+                        return s === k || (k.length >= 5 && s.endsWith(k) && s.length >= 5);
+                    });
                 });
-                if (matchKey) {
-                    let foundMSSV = matchKey;
-                    const cellMatch = row.find(c => { const s = String(c).trim(); return s === matchKey || (matchKey.length === 5 && s.endsWith(matchKey) && s.length > 5); });
-                    if (cellMatch) foundMSSV = cellMatch;
-                    renderCard(row, foundMSSV);
-                }
+                if (matchKey) renderCard(row, matchKey);
             });
         }
 
-        function renderCard(row, k) {
-            const area = document.getElementById('resultArea');
-            let idx = db.indexOf(row);
-
-            // Lấy số hàng Excel
-            let rowPos = idx + 1;
-
-            let header = ""; for (let j = idx; j >= 0; j--) { const rStr = db[j].join(" "); if (rStr.includes("Thời gian:")) { header = rStr; break; } }
+        function renderCard(row, matchedKey) {
+            let sheetName = row._sheetName || "Danh sách chung";
             let d = "---", t = "---", p = "---", cs = "---";
-            if (header) { const tm = header.match(/Thời gian:\s*([\d|h|:]+)\s*-\s*([\d|\/]+)/); if (tm) { t = tm[1]; d = tm[2]; } const pm = header.match(/Phòng:\s*([^-]+)-\s*(.*)/); if (pm) { p = pm[1].trim(); cs = pm[2].trim(); } }
-            let name = "", lop = "", stt = "", note = "";
-            let idX = row.findIndex(c => String(c).trim() === String(k).trim());
-            if (idX === -1) idX = row.findIndex(c => String(c).trim().endsWith(k));
-            if (isPDF) { stt = row[idX - 1] || "---"; name = (row[idX + 1] || "") + " " + (row[idX + 2] || ""); lop = row[idX + 3] || "---"; note = row.find(c => String(c).toLowerCase().includes("nợ")) || ""; }
-            else { if (idX !== -1) { stt = row[idX - 1] || row[0]; name = (row[idX + 1] || "") + " " + (row[idX + 2] || ""); lop = row[idX + 3] || ""; note = row.find(c => String(c).toLowerCase().includes("nợ") || String(c).toLowerCase().includes("hp")); if (!note) note = row[row.length - 1]; if (note === lop || note === name) note = ""; } else { stt = row[1] || row[0]; name = (row[3] || "") + " " + (row[4] || ""); lop = row[5] || "---"; note = row[7] || row[6] || ""; } }
-            const warn = (String(note).toLowerCase().includes("nợ") || String(note).toLowerCase().includes("hp")) ? "warn" : "";
+            let rawStr = "";
 
+            for (let i = row.length - 1; i >= 0; i--) {
+                let s = String(row[i] || "").trim();
+                if (s.includes("Ngày") && s.includes("Phòng") && s.length > 20) { rawStr = s; break; }
+            }
+            if (!rawStr) {
+                let dbIdx = db.indexOf(row);
+                for (let j = dbIdx - 1; j >= 0; j--) {
+                    if (dbIdx - j > 40 || (db[j]._sheetName && db[j]._sheetName !== sheetName)) break;
+                    let rStr = db[j].join(" ");
+                    if (rStr.includes("Thời gian:") || rStr.includes("Phòng:")) { rawStr = rStr; break; }
+                }
+            }
+            if (rawStr) {
+                let tMatch = rawStr.match(/(\d{1,2}h\d{2})/); if (tMatch) t = tMatch[1];
+                let dMatch = rawStr.match(/Ngày\s+([\d\/]+)/); if (dMatch) d = dMatch[1];
+                let pParts = rawStr.split(/Phòng:?\s*/i); if (pParts[1]) p = pParts[1].split("-")[0].trim();
+                let csParts = rawStr.split(/cơ sở:?\s*/i); if (csParts[1]) cs = csParts[1].trim();
+            }
+
+            let msvIndex = row.findIndex(cell => { let s = String(cell).trim(); return s === matchedKey || (matchedKey.length >= 5 && s.endsWith(matchedKey)); });
+            if (msvIndex === -1) msvIndex = row.findIndex(c => !isNaN(String(c)) && String(c).length > 7);
+            if (msvIndex === -1) msvIndex = 1;
+
+            let msv = row[msvIndex];
+
+            let uniqueCode = `${msv}-${d}-${t}`;
+            if (d !== "---" && t !== "---") {
+                if (processedExams.has(uniqueCode)) return;
+                processedExams.add(uniqueCode);
+            }
+
+            // SỐ DÒNG BÂY GIỜ ĐÃ CHUẨN (Lấy từ _realRowIndex)
+            let rowIdx = row._realRowIndex || (db.indexOf(row) + 1);
+
+            let fullName = (row[msvIndex + 1] || "") + " " + (row[msvIndex + 2] || "");
+            fullName = fullName.replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
+            let stt = (msvIndex > 0) ? row[msvIndex - 1] : row[0];
+            let lop = "---";
+            for (let k = msvIndex + 2; k < row.length; k++) {
+                let s = String(row[k]).trim();
+                if (s.length > 3 && s.length < 15 && /[A-Z]/.test(s) && !s.includes("h") && !s.includes("/")) { lop = s; break; }
+            }
+            if (lop === "---") lop = row[5] || "";
+
+            let realNote = ""; let warnClass = "";
+            for (let i = 0; i < row.length; i++) {
+                let txt = String(row[i] || "").trim();
+                if (txt !== rawStr && !txt.includes(msv) && (txt.toLowerCase().includes("nợ") || txt.toLowerCase().includes("cấm") || txt.toLowerCase().includes("hp"))) {
+                    realNote = txt; warnClass = "warn";
+                }
+            }
+
+            const area = document.getElementById('resultArea');
             const div = document.createElement('div');
             div.className = 'card';
             div.innerHTML = `
-                <div class="c-header">KẾT QUẢ TRA CỨU</div>
-                <div class="c-body">
-                    <div class="row"><span>Ngày thi:</span><span class="val">${d}</span></div>
-                    <div class="row"><span>Giờ thi:</span><span class="val">${t}</span></div>
-                    <div class="row"><span>Phòng thi:</span><span class="val" style="color:#d32f2f; font-size:16px;">${p}</span></div>
-                    <div class="row"><span>Cơ sở:</span><span class="val">${cs}</span></div>
-                    <div class="hl-box">
-                        <div class="row"><span>Vị trí hàng:</span><span class="val">#${rowPos}</span></div>
-                        <div class="row"><span>MSSV:</span><span class="val">${k}</span></div>
-                        <div class="row"><span>Họ tên:</span><span class="val">${name}</span></div>
-                        <div class="row"><span>Lớp:</span><span class="val">${lop}</span></div>
-                        <div class="row"><span>Ghi chú:</span><span class="val ${warn}">${note || "---"}</span></div>
-                        <div class="row"><span>STT:</span><span class="val stt-red">${stt}</span></div>
-                    </div>
-                </div>
-                <button class="btn-shot" onclick="capture(this.parentElement)">📸 CHỤP ẢNH</button>
-            `;
+        <div class="c-header">DANH SÁCH THI</div>
+        <div class="c-body">
+            <div class="row" style="background:#f0f8ff; padding:5px; border-radius:4px;">
+                <span style="color:#2980b9;">📂 Nguồn:</span>
+                <span class="val" style="color:#2980b9;">${sheetName}</span>
+            </div>
+            <div class="row"><span>Ngày thi:</span><span class="val">${d}</span></div>
+            <div class="row"><span>Giờ thi:</span><span class="val">${t}</span></div>
+            <div class="row"><span>Phòng thi:</span><span class="val" style="color:#d32f2f; font-size:16px;">${p}</span></div>
+            <div class="row"><span>Cơ sở:</span><span class="val">${cs}</span></div>
+            <div class="hl-box">
+                <div class="row"><span>Vị trí hàng:</span><span class="val">#${rowIdx}</span></div>
+                <div class="row"><span>MSSV:</span><span class="val">${msv}</span></div>
+                <div class="row"><span>Họ tên:</span><span class="val">${fullName}</span></div>
+                <div class="row"><span>Lớp:</span><span class="val">${lop}</span></div>
+                <div class="row"><span>Ghi chú:</span><span class="val ${warnClass}">${realNote}</span></div>
+                <div class="row"><span>STT Gốc:</span><span class="val stt-red">${stt}</span></div>
+            </div>
+        </div>
+        <button class="btn-shot" onclick="capture(this.parentElement)">📸 CHỤP ẢNH</button>
+    `;
             area.appendChild(div);
         }
 
