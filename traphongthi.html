@@ -734,67 +734,62 @@
                 if (matchKey) renderCard(row, matchKey);
             });
         }
-
         function renderCard(row, matchedKey) {
             let sheetName = row._sheetName || "Danh sách chung";
-            let d = "---", t = "---", p = "---", cs = "---";
+            let d = "", t = "", p = "---", cs = "";
             let rawStr = "";
 
-            for (let i = row.length - 1; i >= 0; i--) {
-                let s = String(row[i] || "").trim();
-                if (s.includes("Ngày") && s.includes("Phòng") && s.length > 20) { rawStr = s; break; }
-            }
-            if (!rawStr) {
-                let dbIdx = db.indexOf(row);
-                for (let j = dbIdx - 1; j >= 0; j--) {
-                    if (dbIdx - j > 40 || (db[j]._sheetName && db[j]._sheetName !== sheetName)) break;
-                    let rStr = db[j].join(" ");
-                    if (rStr.includes("Thời gian:") || rStr.includes("Phòng:")) { rawStr = rStr; break; }
+            // 1. TÌM THÔNG TIN PHÒNG/GIỜ/NGÀY TỪ CÁC DÒNG PHÍA TRÊN
+            let dbIdx = db.indexOf(row);
+            for (let j = dbIdx; j >= Math.max(0, dbIdx - 50); j--) {
+                let rStr = db[j].join(" ");
+                if (rStr.includes("Thời gian:") || rStr.includes("Phòng:") || (rStr.includes("Ngày") && rStr.includes("Phòng"))) {
+                    rawStr = rStr;
+                    break;
                 }
             }
+
             if (rawStr) {
                 let tMatch = rawStr.match(/(\d{1,2}h\d{2})/); if (tMatch) t = tMatch[1];
-                let dMatch = rawStr.match(/Ngày\s+([\d\/]+)/); if (dMatch) d = dMatch[1];
-                let pParts = rawStr.split(/Phòng:?\s*/i); if (pParts[1]) p = pParts[1].split("-")[0].trim();
-                let csParts = rawStr.split(/cơ sở:?\s*/i); if (csParts[1]) cs = csParts[1].trim();
+                let dMatch = rawStr.match(/(\d{1,2}\/\d{1,2}\/\d{4})/); if (dMatch) d = dMatch[1];
+                let pMatch = rawStr.match(/Phòng:?\s*([^–-]*)/i);
+                if (pMatch && pMatch[1]) p = pMatch[1].trim();
+                let csKeywords = ["Hòa Khánh", "Quang Trung", "Phan Thanh", "Việt Trực"];
+                csKeywords.forEach(k => { if (rawStr.includes(k)) cs = k; });
             }
 
-            let msvIndex = row.findIndex(cell => { let s = String(cell).trim(); return s === matchedKey || (matchedKey.length >= 5 && s.endsWith(matchedKey)); });
-            if (msvIndex === -1) msvIndex = row.findIndex(c => !isNaN(String(c)) && String(c).length > 7);
-            if (msvIndex === -1) msvIndex = 1;
+            // 2. XÁC ĐỊNH MSSV VÀ THÔNG TIN SINH VIÊN
+            let msvIndex = row.findIndex(cell => {
+                let s = String(cell).trim();
+                return s === matchedKey || (matchedKey.length >= 5 && s.endsWith(matchedKey));
+            });
+
+            if (msvIndex === -1) return;
 
             let msv = row[msvIndex];
-
-            let uniqueCode = `${msv}-${d}-${t}`;
-            if (d !== "---" && t !== "---") {
-                if (processedExams.has(uniqueCode)) return;
-                processedExams.add(uniqueCode);
-            }
-
-            // SỐ DÒNG BÂY GIỜ ĐÃ CHUẨN (Lấy từ _realRowIndex)
-            let rowIdx = row._realRowIndex || (db.indexOf(row) + 1);
-
+            let rowIdx = row._realRowIndex || (dbIdx + 1);
+            let stt = row[msvIndex - 1] || "";
             let fullName = (row[msvIndex + 1] || "") + " " + (row[msvIndex + 2] || "");
             fullName = fullName.replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
-            let stt = (msvIndex > 0) ? row[msvIndex - 1] : row[0];
-            let lop = "---";
-            for (let k = msvIndex + 2; k < row.length; k++) {
-                let s = String(row[k]).trim();
-                if (s.length > 3 && s.length < 15 && /[A-Z]/.test(s) && !s.includes("h") && !s.includes("/")) { lop = s; break; }
-            }
-            if (lop === "---") lop = row[5] || "";
+            let lop = row.find(c => String(c).includes("K31") || (String(c).length > 5 && /[A-Z]/.test(String(c)) && !String(c).includes("/")));
 
-            let realNote = ""; let warnClass = "";
+            // 3. XỬ LÝ GHI CHÚ (NỢ HP, CẤM THI,...)
+            let realNote = "";
+            let warnClass = "";
+            // Duyệt toàn bộ các ô trong hàng để tìm từ khóa cảnh báo
             for (let i = 0; i < row.length; i++) {
-                let txt = String(row[i] || "").trim();
-                if (txt !== rawStr && !txt.includes(msv) && (txt.toLowerCase().includes("nợ") || txt.toLowerCase().includes("cấm") || txt.toLowerCase().includes("hp"))) {
-                    realNote = txt; warnClass = "warn";
+                let txt = String(row[i] || "").trim().toLowerCase();
+                if (txt.includes("nợ") || txt.includes("cấm") || txt.includes("hp") || txt.includes("vắng")) {
+                    realNote = String(row[i]).trim();
+                    warnClass = "warn"; // Kích hoạt hiệu ứng nhấp nháy đỏ
+                    break;
                 }
             }
 
             const area = document.getElementById('resultArea');
             const div = document.createElement('div');
             div.className = 'card';
+
             div.innerHTML = `
         <div class="c-header">DANH SÁCH THI</div>
         <div class="c-body">
@@ -802,17 +797,21 @@
                 <span style="color:#2980b9;">📂 Nguồn:</span>
                 <span class="val" style="color:#2980b9;">${sheetName}</span>
             </div>
-            <div class="row"><span>Ngày thi:</span><span class="val">${d}</span></div>
-            <div class="row"><span>Giờ thi:</span><span class="val">${t}</span></div>
-            <div class="row"><span>Phòng thi:</span><span class="val" style="color:#d32f2f; font-size:16px;">${p}</span></div>
-            <div class="row"><span>Cơ sở:</span><span class="val">${cs}</span></div>
+            ${d ? `<div class="row"><span>Ngày thi:</span><span class="val">${d}</span></div>` : ''}
+            ${t ? `<div class="row"><span>Giờ thi:</span><span class="val">${t}</span></div>` : ''}
+            <div class="row"><span>Phòng thi:</span><span class="val" style="color:#d32f2f; font-size:18px;">${p}</span></div>
+            ${cs ? `<div class="row"><span>Cơ sở:</span><span class="val">${cs}</span></div>` : ''}
+            
             <div class="hl-box">
                 <div class="row"><span>Vị trí hàng:</span><span class="val">#${rowIdx}</span></div>
                 <div class="row"><span>MSSV:</span><span class="val">${msv}</span></div>
                 <div class="row"><span>Họ tên:</span><span class="val">${fullName}</span></div>
-                <div class="row"><span>Lớp:</span><span class="val">${lop}</span></div>
-                <div class="row"><span>Ghi chú:</span><span class="val ${warnClass}">${realNote}</span></div>
-                <div class="row"><span>STT Gốc:</span><span class="val stt-red">${stt}</span></div>
+                ${lop ? `<div class="row"><span>Lớp:</span><span class="val">${lop}</span></div>` : ''}
+                <div class="row"><span>STT Gốc:</span><span class="val">${stt}</span></div>
+                ${realNote ? `<div class="row" style="margin-top:10px; border-top:1px solid #ffd4d4; padding-top:5px;">
+                    <span class="${warnClass}" style="font-weight:900;">⚠️ GHI CHÚ:</span>
+                    <span class="val ${warnClass}">${realNote}</span>
+                </div>` : ''}
             </div>
         </div>
         <button class="btn-shot" onclick="capture(this.parentElement)">📸 CHỤP ẢNH</button>
