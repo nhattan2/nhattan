@@ -658,17 +658,30 @@
         }
 
         async function parsePDF(blob) {
-            const data = await blob.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(data) }).promise;
+            const data = await blob.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(data) }).promise;
             let tmp = [];
             for (let i = 1; i <= pdf.numPages; i++) {
-                const p = await pdf.getPage(i); const c = await p.getTextContent();
-                const l = {}; c.items.forEach(it => { const y = Math.round(it.transform[5] / 2) * 2; if (!l[y]) l[y] = []; l[y].push(it); });
+                const p = await pdf.getPage(i);
+                const c = await p.getTextContent();
+                const l = {};
+                c.items.forEach(it => {
+                    const y = Math.round(it.transform[5] / 2) * 2;
+                    if (!l[y]) l[y] = [];
+                    l[y].push(it);
+                });
                 Object.keys(l).sort((a, b) => b - a).forEach(y => {
                     let row = l[y].sort((a, b) => a.transform[4] - b.transform[4]).map(x => x.str.trim()).filter(s => s !== "");
-                    row._sheetName = "File PDF"; tmp.push(row);
+
+                    // CHUẨN HÓA CHO PDF: Gắn nhãn để renderCard nhận biết
+                    row._isPDF = true;
+                    row._sheetName = `Trang ${i}`;
+                    tmp.push(row);
                 });
             }
-            db = tmp; toast(`📂 Đã nạp PDF`, "t-ok"); enableInput();
+            db = tmp;
+            toast(`📂 Đã nạp PDF (${pdf.numPages} trang)`, "t-ok");
+            enableInput();
         }
 
         function enableInput() { document.getElementById('mssvIn').disabled = false; document.getElementById('mssvIn').focus(); }
@@ -734,12 +747,12 @@
                 if (matchKey) renderCard(row, matchKey);
             });
         }
+
         function renderCard(row, matchedKey) {
             let sheetName = row._sheetName || "Danh sách chung";
             let d = "", t = "", p = "---", cs = "";
             let rawStr = "";
 
-            // 1. TÌM THÔNG TIN PHÒNG/GIỜ/NGÀY TỪ CÁC DÒNG PHÍA TRÊN
             let dbIdx = db.indexOf(row);
             for (let j = dbIdx; j >= Math.max(0, dbIdx - 50); j--) {
                 let rStr = db[j].join(" ");
@@ -758,30 +771,41 @@
                 csKeywords.forEach(k => { if (rawStr.includes(k)) cs = k; });
             }
 
-            // 2. XÁC ĐỊNH MSSV VÀ THÔNG TIN SINH VIÊN
-            let msvIndex = row.findIndex(cell => {
+            let msvIdx = row.findIndex(cell => {
                 let s = String(cell).trim();
                 return s === matchedKey || (matchedKey.length >= 5 && s.endsWith(matchedKey));
             });
 
-            if (msvIndex === -1) return;
+            if (msvIdx === -1) return;
 
-            let msv = row[msvIndex];
+            let msv = String(row[msvIdx]).trim();
             let rowIdx = row._realRowIndex || (dbIdx + 1);
-            let stt = row[msvIndex - 1] || "";
-            let fullName = (row[msvIndex + 1] || "") + " " + (row[msvIndex + 2] || "");
-            fullName = fullName.replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
-            let lop = row.find(c => String(c).includes("K31") || (String(c).length > 5 && /[A-Z]/.test(String(c)) && !String(c).includes("/")));
+            let stt = row[msvIdx - 1] || "";
+            let fullName = (String(row[msvIdx + 1] || "") + " " + String(row[msvIdx + 2] || "")).replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
 
-            // 3. XỬ LÝ GHI CHÚ (NỢ HP, CẤM THI,...)
+            // --- LOGIC SỬA LỖI PDF ---
+            let lopHP = "";
+            let lopSH = "";
+
+            if (row._isPDF) {
+                // Đối với PDF: Tìm các chuỗi có định dạng mã lớp (ví dụ: SOC 151, HIS 362 hoặc K30VTD)
+                // Lớp HP thường chứa mã môn học (ví dụ: SOC 151 A)
+                lopHP = row.find(c => /^[A-Z]{3,4}\s\d{3}/.test(String(c))) || "";
+                // Lớp SH thường bắt đầu bằng chữ K (ví dụ: K30VTD)
+                lopSH = row.find(c => /^K\d{2}/.test(String(c))) || "";
+            } else {
+                // Giữ nguyên logic Excel hiện tại của bạn
+                lopHP = String(row[5] || "").trim();
+                lopSH = String(row[6] || "").trim();
+            }
+
             let realNote = "";
             let warnClass = "";
-            // Duyệt toàn bộ các ô trong hàng để tìm từ khóa cảnh báo
             for (let i = 0; i < row.length; i++) {
                 let txt = String(row[i] || "").trim().toLowerCase();
                 if (txt.includes("nợ") || txt.includes("cấm") || txt.includes("hp") || txt.includes("vắng")) {
                     realNote = String(row[i]).trim();
-                    warnClass = "warn"; // Kích hoạt hiệu ứng nhấp nháy đỏ
+                    warnClass = "warn";
                     break;
                 }
             }
@@ -791,42 +815,122 @@
             div.className = 'card';
 
             div.innerHTML = `
-        <div class="c-header">DANH SÁCH THI</div>
-        <div class="c-body">
-            <div class="row" style="background:#f0f8ff; padding:5px; border-radius:4px;">
-                <span style="color:#2980b9;">📂 Nguồn:</span>
-                <span class="val" style="color:#2980b9;">${sheetName}</span>
+        <div class="copyright-header" style="display: none; text-align: center; background: #f8f9fa; color: #6c757d; font-size: 10px; padding: 5px; font-weight: bold; border-bottom: 1px solid #eee;">
+            Bản quyền thuộc Tân & https://t.me/Dai_Hoc_Duy_Tan
+        </div>
+
+        <div class="c-header" style="background: #d32f2f; font-family: 'Segoe UI', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 900;">THÔNG TIN DỰ THI</div>
+        
+        <div class="c-body" style="padding: 15px; background: #ffffff; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 11px; color: #7f8c8d; display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 14px;">📂</span> <b>NGUỒN:</b> <span style="color: #2c3e50;">${sheetName}</span>
             </div>
-            ${d ? `<div class="row"><span>Ngày thi:</span><span class="val">${d}</span></div>` : ''}
-            ${t ? `<div class="row"><span>Giờ thi:</span><span class="val">${t}</span></div>` : ''}
-            <div class="row"><span>Phòng thi:</span><span class="val" style="color:#d32f2f; font-size:18px;">${p}</span></div>
-            ${cs ? `<div class="row"><span>Cơ sở:</span><span class="val">${cs}</span></div>` : ''}
-            
-            <div class="hl-box">
-                <div class="row"><span>Vị trí hàng:</span><span class="val">#${rowIdx}</span></div>
-                <div class="row"><span>MSSV:</span><span class="val">${msv}</span></div>
-                <div class="row"><span>Họ tên:</span><span class="val">${fullName}</span></div>
-                ${lop ? `<div class="row"><span>Lớp:</span><span class="val">${lop}</span></div>` : ''}
-                <div class="row"><span>STT Gốc:</span><span class="val">${stt}</span></div>
-                ${realNote ? `<div class="row" style="margin-top:10px; border-top:1px solid #ffd4d4; padding-top:5px;">
-                    <span class="${warnClass}" style="font-weight:900;">⚠️ GHI CHÚ:</span>
-                    <span class="val ${warnClass}">${realNote}</span>
-                </div>` : ''}
+
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1; background: #f0f7ff; border: 1.5px solid #007bff; border-radius: 12px; padding: 10px; text-align: center;">
+                    <div style="font-size: 11px; color: #007bff; font-weight: bold; margin-bottom: 4px;">🗓️ NGÀY THI</div>
+                    <div style="font-size: 17px; color: #004085; font-weight: 900;">${d}</div>
+                </div>
+                <div style="flex: 1; background: #fff5eb; border: 1.5px solid #fd7e14; border-radius: 12px; padding: 10px; text-align: center;">
+                    <div style="font-size: 11px; color: #fd7e14; font-weight: bold; margin-bottom: 4px;">⏰ GIỜ THI</div>
+                    <div style="font-size: 17px; color: #856404; font-weight: 900;">${t}</div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <div style="font-size: 12px; color: #7f8c8d; font-weight: bold; text-transform: uppercase;">PHÒNG THI</div>
+                <div style="font-size: 32px; color: #d32f2f; font-weight: 900; line-height: 1.1; margin: 2px 0;">${p}</div>
+                <div style="font-size: 14px; color: #2c3e50; font-weight: 800;">📍 CƠ SỞ: ${cs}</div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: center; background: #28a745; color: #fff; border-radius: 8px; padding: 10px; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);">
+                <span style="font-size: 11px; text-transform: uppercase; margin-right: 12px; font-weight: bold; letter-spacing: 1px;">MÃ SV:</span>
+                <span style="font-size: 20px; font-weight: 900; letter-spacing: 2px; font-family: monospace;">${msv}</span>
+            </div>
+
+            <div style="width: 100%; border: 1.5px solid #2c3e50; border-radius: 12px; overflow: hidden; background: #fff;">
+                <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                    <thead>
+                        <tr style="font-size: 10px; font-weight: bold; text-align: center; border-bottom: 1.5px solid #2c3e50; background: #f8f9fa;">
+                            <th style="border-right: 1.5px solid #2c3e50; padding: 8px 2px; width: 12%;">STT</th>
+                            <th style="border-right: 1.5px solid #2c3e50; padding: 8px 4px; width: 45%;">HỌ VÀ TÊN</th>
+                            <th style="border-right: 1.5px solid #2c3e50; padding: 8px 2px; width: 21.5%;">LỚP HỌC<br>PHẦN</th>
+                            <th style="padding: 8px 2px; width: 21.5%;">LỚP SH</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 13px; font-weight: 800; color: #000;">
+                        <tr style="min-height: 60px; text-align: center;">
+                            <td style="border-right: 1.5px solid #2c3e50; vertical-align: middle;">${stt}</td>
+                            <td style="border-right: 1.5px solid #2c3e50; padding: 8px 4px; vertical-align: middle; overflow-wrap: break-word; line-height: 1.2; font-size: ${fullName.length > 20 ? '11px' : '13px'};">
+                                ${fullName}
+                            </td>
+                            <td style="border-right: 1.5px solid #2c3e50; font-weight: 600; font-size: 11px; color: #16a085; vertical-align: middle;">${lopHP}</td>
+                            <td style="font-size: 11px; font-weight: 600; color: #2980b9; vertical-align: middle;">${lopSH}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; background: #f5f0ff; border-radius: 12px; border: 1.5px dashed #6f42c1;">
+                <span style="font-weight: bold; color: #6f42c1; font-size: 16px;">VỊ TRÍ HÀNG</span>
+                <span style="color: #6f42c1; font-size: 38px; font-weight: 950; line-height: 1;">${rowIdx}</span>
+            </div>
+
+            ${realNote && realNote.toUpperCase().includes("NỢ HP") ? `
+            <div style="border-radius: 10px; overflow: hidden; border: 1.5px solid #f5c6cb; background: #fff;">
+                <div style="background: #f8d7da; padding: 8px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed #f5c6cb;">
+                    <span style="font-size: 18px; flex-shrink: 0;">⚠️</span>
+                    <span style="color: #721c24; font-size: 13px; font-weight: 900; text-transform: uppercase;">
+                        GHI CHÚ: ${realNote}
+                    </span>
+                </div>
+                <div style="padding: 10px 12px; display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="font-size: 18px; flex-shrink: 0;">🚫</span>
+                    <div style="color: #1b1e21; font-size: 11px; font-weight: 800; line-height: 1.4; white-space: normal; word-break: break-word; flex: 1;">
+                        <span style="color: #d32f2f; text-decoration: underline;">NHẮC NHỞ:</span> 
+                        SINH VIÊN CHƯA ĐÓNG HỌC PHÍ <span style="color: #d32f2f;">KHÔNG ĐƯỢC PHÉP</span> VÀO PHÒNG THI.
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+
+<div class="disclaimer-footer" style="display: none; margin-top: 15px; padding: 10px 12px; background: #fffef0; border: 1px solid #ffe58f; border-radius: 8px; font-size: 10.5px; color: #856404; line-height: 1.5; text-align: center; font-weight: bold; white-space: normal; word-break: break-word; width: auto;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 2px;">
+                    <span style="font-size: 14px;">⚠️</span> <span>MIỄN TRỪ TRÁCH NHIỆM</span>
+                </div>
+                Thông tin mang tính chất tra cứu nhanh. Sinh viên vui lòng tự kiểm tra lại danh sách thi chính thức tại website Phòng Đào tạo để đảm bảo độ chính xác tuyệt đối.
             </div>
         </div>
-        <button class="btn-shot" onclick="capture(this.parentElement)">📸 CHỤP ẢNH</button>
+        <button class="btn-shot" style="background: #2c3e50; color: #fff; width: 100%; border: none; padding: 15px; font-weight: 900; border-radius: 0 0 16px 16px; cursor: pointer; font-size: 14px; text-transform: uppercase;" onclick="capture(this.parentElement)">📸 CHỤP ẢNH LƯU LẠI</button>
     `;
+
             area.appendChild(div);
         }
 
         async function capture(el) {
-            const btn = el.querySelector('button'); btn.style.display = "none";
-            const originalAnimation = el.style.animation; el.style.animation = "none";
+            const btn = el.querySelector('button');
+            const copyright = el.querySelector('.copyright-header');
+            const disclaimer = el.querySelector('.disclaimer-footer');
+
+            // Hiện các phần ẩn khi chụp
+            btn.style.display = "none";
+            if (copyright) copyright.style.display = "block";
+            if (disclaimer) disclaimer.style.display = "block";
+
+            const originalAnimation = el.style.animation;
+            el.style.animation = "none";
+
             const canvas = await html2canvas(el, { scale: 6, backgroundColor: "#ffffff", useCORS: true });
+
+            // Ẩn lại sau khi chụp xong
             el.style.animation = originalAnimation;
+            if (copyright) copyright.style.display = "none";
+            if (disclaimer) disclaimer.style.display = "none";
+            btn.style.display = "block";
+
             canvas.toBlob(blob => {
                 navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-                toast("📸 Đã chụp xong!", "t-ok"); btn.style.display = "block";
+                toast("📸 Đã chụp và sao chép vào Clipboard!", "t-ok");
             }, 'image/png', 1.0);
         }
     </script>
