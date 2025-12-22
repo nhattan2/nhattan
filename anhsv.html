@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tìm ảnh sinh viên — Duy Tân</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     /* Reset nhỏ */
     * {
@@ -217,7 +216,8 @@
       text-align: center;
     }
   </style>
-
+  <!-- SheetJS để đọc Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -254,10 +254,7 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
-    document.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-    });
-
+    // Chặn một số phím tắt phổ biến
     document.addEventListener('keydown', function (e) {
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))) {
         e.preventDefault();
@@ -459,7 +456,7 @@
       });
     });
 
-  </script>>
+  </script>
 </body>
 
 </html>
