@@ -3,217 +3,159 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Danh sách thi</title>
-    <link rel="icon" href="logoo.png"/>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Thi</title>
     <style>
-        /* --- CSS: CẤU TRÚC LAYOUT CỐ ĐỊNH (APP STYLE) --- */
         :root {
-            --primary-color: #007bff;
-            --bg-color: #f4f4f9;
-            --container-bg: #fff;
+            --p: #007bff;
+            --bg: #f0f2f5;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
             margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: #333;
-            /* Sử dụng dvh để fix lỗi thanh địa chỉ trên mobile */
             height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .container {
-            width: 100%;
-            max-width: 1500px;
-            /* Full chiều cao trên mobile */
-            height: 100%;
-            background: var(--container-bg);
-            padding: 15px;
-            box-sizing: border-box;
+            flex: 1;
             display: flex;
             flex-direction: column;
-        }
-
-        @media (min-width: 768px) {
-            .container {
-                width: 95%;
-                height: 95vh;
-                border-radius: 12px;
-                padding: 20px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            }
-        }
-
-        /* --- PHẦN CỐ ĐỊNH (HEADER + SEARCH) --- */
-        .fixed-header {
-            flex-shrink: 0;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
+            max-width: 1000px;
+            margin: 10px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
 
         h1 {
-            color: var(--primary-color);
             text-align: center;
-            margin: 5px 0 10px 0;
-            font-size: 1.3em;
+            color: var(--p);
+            margin: 15px 0;
+            font-size: 1.4rem;
             text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .search-box {
+            padding: 0 20px 15px;
         }
 
         #search-box {
             width: 100%;
-            padding: 12px 15px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
+            padding: 12px;
+            border: 2px solid #eee;
             border-radius: 8px;
-            font-size: 16px;
-            /* Font 16px tránh zoom trên iOS */
-            transition: border-color 0.3s;
-            background: #f9f9f9;
-        }
-
-        #search-box:focus {
-            border-color: var(--primary-color);
             outline: none;
+            font-size: 16px;
+            text-align: center;
             background: #fff;
         }
 
-        .status-bar {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 5px;
-            text-align: center;
-            /* Căn giữa trên mobile cho đẹp */
-            height: auto;
-            min-height: 15px;
+        #search-box:focus {
+            border-color: var(--p);
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.1);
         }
 
-        /* --- PHẦN CUỘN (DANH SÁCH THI) --- */
-        .exam-list-wrapper {
-            flex-grow: 1;
+        .table-wrapper {
+            flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
-            padding-right: 2px;
-            padding-top: 5px;
-            -webkit-overflow-scrolling: touch;
+            border-top: 1px solid #eee;
         }
 
-        #exam-list {
-            display: grid;
-            grid-template-columns: 1fr;
-            /* 1 cột trên mobile */
-            gap: 10px;
-            padding-bottom: 20px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
         }
 
-        @media (min-width: 600px) {
-            #exam-list {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-            }
-        }
-
-        @media (min-width: 900px) {
-            #exam-list {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        /* --- STYLE CHO TỪNG THẺ (CARD) --- */
-        .exam-item {
-            background-color: #fff;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            border-left: 5px solid var(--primary-color);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: transform 0.1s;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .exam-item:active {
-            transform: scale(0.98);
-        }
-
-        .exam-content {
-            flex-grow: 1;
-            overflow-wrap: break-word;
-            margin-bottom: 8px;
-        }
-
-        .exam-title a {
-            font-weight: 600;
-            color: inherit;
-            text-decoration: none;
-            font-size: 1rem;
-            display: block;
-            margin-bottom: 4px;
-            line-height: 1.4;
-        }
-
-        .meta-info {
-            font-size: 0.85em;
-            color: #555;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 4px;
-        }
-
-        .upload-date {
-            font-size: 0.75em;
-            color: #999;
-            border-top: 1px dashed #eee;
-            padding-top: 6px;
-            text-align: right;
-        }
-
-        /* --- SKELETON LOADING --- */
-        .skeleton {
-            background-color: #f0f0f0;
-            border-radius: 8px;
-            height: 100px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* (Animation shimmer giữ nguyên) */
-        .skeleton::after {
-            content: "";
-            position: absolute;
+        thead {
+            position: sticky;
             top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            transform: translateX(-100%);
-            background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0));
-            animation: shimmer 2s infinite;
+            z-index: 10;
+            background: #f8f9fa;
         }
 
-        @keyframes shimmer {
-            100% {
-                transform: translateX(100%);
-            }
-        }
-
-        .error,
-        .no-results {
+        th {
+            padding: 15px 10px;
             text-align: center;
-            grid-column: 1 / -1;
-            padding: 20px;
-            font-size: 1em;
+            font-size: 13px;
             color: #666;
+            border-bottom: 2px solid #eee;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            word-wrap: break-word;
+            font-size: 14px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .col-date {
+            width: 110px;
+            font-weight: bold;
+        }
+
+        .col-name {
+            width: auto;
+        }
+
+        .col-action {
+            width: 110px;
+        }
+
+        .btn-open {
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .btn-open:hover {
+            opacity: 0.8;
+            transform: scale(0.95);
+        }
+
+        .new-tag {
+            background: #ff4d4f;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        .status {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            padding: 8px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 600px) {
+            .col-date {
+                width: 90px;
+                font-size: 12px;
+            }
+
+            .col-action {
+                width: 90px;
+            }
         }
     </style>
 </head>
@@ -221,48 +163,115 @@
 <body>
 
     <div class="container">
-        <div class="fixed-header">
-            <h1>Danh sách thi</h1>
-            <input type="text" id="search-box" placeholder="Tìm môn, mã môn..." autocomplete="off">
-            <div id="status-bar" class="status-bar"></div>
+        <h1>DANH SÁCH THI</h1>
+        <div class="search-box">
+            <input type="text" id="search-box" placeholder="Tìm môn, mã môn hoặc ngày (vd: 22/12)..." autocomplete="off"
+                autofocus>
         </div>
 
-        <div class="exam-list-wrapper">
-            <div id="exam-list">
-            </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-date">Ngày tải</th>
+                        <th class="col-name">Tên file danh sách</th>
+                        <th class="col-action">Trang tải</th>
+                    </tr>
+                </thead>
+                <tbody id="data-body"></tbody>
+            </table>
         </div>
+        <div id="status" class="status">Đang đồng bộ dữ liệu...</div>
     </div>
-    <script src="lock_system.js"></script>
+
     <script>
-        // --- GIỮ NGUYÊN TOÀN BỘ SCRIPT GỐC (KHÔNG CHỈNH SỬA LOGIC) ---
-        const CONFIG = { ORIGINAL_API: 'https://tidtu-worker-examlist.ngtuonghy.workers.dev/api/v1/pdaotao/scraping/examlist', PROXY: 'https://api.codetabs.com/v1/proxy/?quest=', BASE_URL: 'https://pdaotao.duytan.edu.vn/', CACHE_KEY: 'DTU_EXAM_CACHE_V1', CACHE_TIME_KEY: 'DTU_EXAM_LAST_UPDATE', REFRESH_INTERVAL: 120000 }; const COLOR_PALETTE = ['#4a90e2', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#17a2b8', '#e83e8c', '#00bcd4', '#ffeb3b', '#8bc34a', '#ff9800', '#f44336', '#9c27b0', '#607d8b', '#009688', '#ff5722', '#673ab7', '#3f51b5', '#03a9f4', '#007bff', '#20c997', '#adb5bd', '#343a40']; const dom = { list: document.getElementById('exam-list'), search: document.getElementById('search-box'), status: document.getElementById('status-bar') }; let allExams = []; const dateColorMap = new Map(); const parseDate = (dateString) => { try { const [d, m, y] = dateString.split(' ')[1].split('/'); return new Date(y, m - 1, d); } catch { return null; } }; const getColorByDate = (dateString) => { const d = parseDate(dateString); if (!d) return '#6c757d'; const key = `${d.getDate()}/${d.getMonth()}/${d.getFullYear()}`; if (!dateColorMap.has(key)) { dateColorMap.set(key, COLOR_PALETTE[dateColorMap.size % COLOR_PALETTE.length]); } return dateColorMap.get(key); }; const isNew = (dateString) => { const d = parseDate(dateString); if (!d) return false; const today = new Date(); today.setHours(0, 0, 0, 0); const check = new Date(d); check.setHours(0, 0, 0, 0); return (today - check) <= (3 * 86400000); }; function renderSkeleton() { dom.list.innerHTML = Array(8).fill('<div class="skeleton"></div>').join(''); }
-        function renderExams(data) {
-            if (!data || data.length === 0) { dom.list.innerHTML = '<div class="no-results">✅ Không tìm thấy lịch thi phù hợp.</div>'; return; }
-            const html = data.map(exam => {
-                const itemColor = getColorByDate(exam.uploadDate); const url = CONFIG.BASE_URL + exam.examDetailsUrl; let displayTitle = exam.examTitle; let metaInfo = ''; const parts = exam.examTitle.split('_'); if (parts.length >= 4 && /^\d{8}$/.test(parts[0])) {
-                    displayTitle = parts.slice(3).join(' ').trim() || exam.examTitle; const datePart = parts[0].replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3'); const timePart = parts[1].replace('H', ':');
-                    // CẬP NHẬT NHỎ HTML TRONG JS ĐỂ KHỚP STYLE MỚI (CHỈ HTML STRING, KO LOGIC)
-                    metaInfo = `<div class="meta-info"><span>🗓️ ${datePart}</span> <span>⏱️ ${timePart}</span> <span>🏷️ ${parts[2]}</span></div>`;
-                }
-                const newLabel = isNew(exam.uploadDate) ? `<span style="background-color:${itemColor};color:#fff;padding:1px 5px;border-radius:4px;font-size:0.7em;margin-left:5px;vertical-align:middle">NEW</span>` : ''; return `
-                <div class="exam-item" style="border-left-color: ${itemColor};">
-                    <div class="exam-content">
-                        <div class="exam-title">
-                            <a href="${url}" target="_blank" style="color: ${itemColor};">
-                                ${displayTitle} ${newLabel}
-                            </a>
-                        </div>
-                        ${metaInfo ? metaInfo : ''}
-                    </div>
-                    <div class="upload-date">Tải lúc: ${exam.uploadDate}</div>
-                </div>`;
-            }).join(''); dom.list.innerHTML = html;
+        const CONFIG = {
+            API: 'https://api.codetabs.com/v1/proxy/?quest=https://tidtu-worker-examlist.ngtuonghy.workers.dev/api/v1/pdaotao/scraping/examlist',
+            BASE_URL: 'https://pdaotao.duytan.edu.vn/',
+            STORAGE_KEY: 'dtu_cache_ultra_v2',
+            REFRESH_RATE: 15 * 1000, // 15 giây
+        };
+
+        const COLORS = ['#28a745', '#e67e22', '#e74c3c', '#8e44ad', '#2980b9', '#16a085', '#d35400', '#2c3e50'];
+        const dateColorMap = {};
+        let allExams = [];
+
+        async function init() {
+            // 1. Tự động trỏ vào ô nhập ngay khi vào trang
+            document.getElementById('search-box').focus();
+
+            // 2. Load dữ liệu cũ từ bộ nhớ
+            const cached = localStorage.getItem(CONFIG.STORAGE_KEY);
+            if (cached) {
+                allExams = JSON.parse(cached);
+                render(allExams);
+            }
+
+            // 3. Cập nhật dữ liệu mới ngay lập tức và đặt lịch mỗi phút
+            fetchData();
+            setInterval(fetchData, CONFIG.REFRESH_RATE);
         }
-        async function loadData() { const cachedData = localStorage.getItem(CONFIG.CACHE_KEY); const lastUpdate = localStorage.getItem(CONFIG.CACHE_TIME_KEY); if (cachedData) { allExams = JSON.parse(cachedData); renderExams(allExams); if (lastUpdate) dom.status.innerHTML = `🔄 Dữ liệu cũ: ${lastUpdate}. Đang tải...`; } else { renderSkeleton(); dom.status.innerHTML = `🔄 Đang tải...`; } try { const response = await fetch(CONFIG.PROXY + encodeURIComponent(CONFIG.ORIGINAL_API)); if (!response.ok) throw new Error(`HTTP ${response.status}`); const json = await response.json(); const newData = json.response?.data || []; if (newData.length > 0 && JSON.stringify(newData) !== cachedData) { allExams = newData; allExams.sort((a, b) => (parseDate(b.uploadDate) || 0) - (parseDate(a.uploadDate) || 0)); renderExams(allExams); const now = new Date().toLocaleString('vi-VN'); localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(allExams)); localStorage.setItem(CONFIG.CACHE_TIME_KEY, now); dom.status.innerHTML = `✅ Cập nhật: ${now}`; } else { dom.status.innerHTML = `✅ Mới nhất (${lastUpdate})`; } } catch (error) { if (cachedData) { dom.status.innerHTML = `⚠️ Lỗi tải. Đang xem bản offline.`; dom.status.style.color = '#d9534f'; } else { dom.list.innerHTML = `<div class="error">❌ Lỗi tải dữ liệu.<br>${error.message}</div>`; } } } let timeoutId; dom.search.addEventListener('keyup', (e) => { clearTimeout(timeoutId); timeoutId = setTimeout(() => { const query = e.target.value.toLowerCase().trim(); const filtered = allExams.filter(exam => `${exam.examTitle} ${exam.uploadDate}`.toLowerCase().includes(query)); renderExams(filtered); }, 300); }); loadData(); setInterval(loadData, CONFIG.REFRESH_INTERVAL);
+
+        async function fetchData() {
+            try {
+                const res = await fetch(CONFIG.API);
+                const json = await res.json();
+                const data = json.response?.data || [];
+                if (data.length > 0) {
+                    allExams = data;
+                    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(data));
+                    render(allExams);
+                }
+                document.getElementById('status').innerText = `Cập nhật lúc: ${new Date().toLocaleTimeString()}`;
+            } catch (e) {
+                document.getElementById('status').innerText = "Chế độ Offline";
+            }
+        }
+
+        function getColor(dateStr) {
+            const date = dateStr.split(' ')[1] || dateStr;
+            if (!dateColorMap[date]) {
+                const index = Object.keys(dateColorMap).length % COLORS.length;
+                dateColorMap[date] = COLORS[index];
+            }
+            return dateColorMap[date];
+        }
+
+        function render(data) {
+            const body = document.getElementById('data-body');
+            body.innerHTML = data.map(item => {
+                const datePart = item.uploadDate.split(' ')[1] || item.uploadDate;
+                const color = getColor(datePart);
+                const url = CONFIG.BASE_URL + item.examDetailsUrl;
+
+                return `
+            <tr>
+                <td class="col-date" style="color: ${color}">${datePart}</td>
+                <td class="col-name">
+                    <strong>${item.examTitle}</strong>
+                    ${item.isNew ? '<span class="new-tag">MỚI</span>' : ''}
+                </td>
+                <td class="col-action">
+                    <a href="${url}" target="_blank" class="btn-open" style="background: ${color}">MỞ TẢI</a>
+                </td>
+            </tr>
+        `;
+            }).join('');
+        }
+
+        // Lọc gợi ý tới đâu hiện tới đó (Hỗ trợ lọc cả Ngày tải)
+        document.getElementById('search-box').addEventListener('input', (e) => {
+            const kw = e.target.value.toLowerCase().trim();
+            const filtered = allExams.filter(ex => {
+                const title = ex.examTitle.toLowerCase();
+                const date = ex.uploadDate.toLowerCase();
+                return title.includes(kw) || date.includes(kw);
+            });
+            render(filtered);
+        });
+
+        init();
     </script>
 </body>
 
-
 </html>
-
-
