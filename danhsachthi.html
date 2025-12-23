@@ -128,6 +128,13 @@
             transform: scale(0.95);
         }
 
+        /* Highlight mã lớp được tìm thấy trong ngoặc */
+        .highlight-code {
+            color: red;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
         .new-tag {
             background: #ff4d4f;
             color: white;
@@ -165,8 +172,8 @@
     <div class="container">
         <h1>DANH SÁCH THI</h1>
         <div class="search-box">
-            <input type="text" id="search-box" placeholder="Nhập môn (vd: his362, 22/12)..." autocomplete="off"
-                autofocus>
+            <input type="text" id="search-box" placeholder="Môn (his362), Lớp (chi 151 as) hoặc Ngày (22/12)..."
+                autocomplete="off" autofocus>
         </div>
 
         <div class="table-wrapper">
@@ -188,21 +195,20 @@
         const CONFIG = {
             API: 'https://api.codetabs.com/v1/proxy/?quest=https://tidtu-worker-examlist.ngtuonghy.workers.dev/api/v1/pdaotao/scraping/examlist',
             BASE_URL: 'https://pdaotao.duytan.edu.vn/',
-            STORAGE_KEY: 'dtu_cache_smart_v3',
-            REFRESH_RATE: 60000 // Tự cập nhật mỗi 1 phút
+            STORAGE_KEY: 'dtu_cache_ultra_final',
+            REFRESH_RATE: 60000 // Tự động cập nhật mỗi 1 phút
         };
 
         const COLORS = ['#28a745', '#e67e22', '#e74c3c', '#8e44ad', '#2980b9', '#16a085', '#d35400', '#2c3e50'];
         const dateColorMap = {};
         let allExams = [];
 
-        // Hàm xóa khoảng trắng, gạch ngang và đưa về chữ thường để so sánh
-        function normalizeStr(str) {
-            return str.toLowerCase().replace(/[\s\-_]/g, '');
+        function normalize(str) {
+            return str.toLowerCase().replace(/[\s\-_/]/g, ''); // Xóa khoảng trắng, gạch ngang, gạch chéo
         }
 
         async function init() {
-            document.getElementById('search-box').focus();
+            document.getElementById('search-box').focus(); // Tự động trỏ vào ô nhập
             const cached = localStorage.getItem(CONFIG.STORAGE_KEY);
             if (cached) {
                 allExams = JSON.parse(cached);
@@ -220,12 +226,10 @@
                 if (data.length > 0) {
                     allExams = data;
                     localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(data));
-                    render(allExams);
+                    render(allExams, document.getElementById('search-box').value);
                 }
                 document.getElementById('status').innerText = `Cập nhật lúc: ${new Date().toLocaleTimeString()}`;
-            } catch (e) {
-                document.getElementById('status').innerText = "Chế độ Offline";
-            }
+            } catch (e) { document.getElementById('status').innerText = "Chế độ Offline"; }
         }
 
         function getColor(dateStr) {
@@ -237,18 +241,31 @@
             return dateColorMap[date];
         }
 
-        function render(data) {
+        function render(data, searchText = '') {
             const body = document.getElementById('data-body');
+            const searchParts = searchText.trim().toLowerCase().split(' ');
+            const classCode = searchParts.length > 1 ? searchParts[searchParts.length - 1] : '';
+
             body.innerHTML = data.map(item => {
                 const datePart = item.uploadDate.split(' ')[1] || item.uploadDate;
                 const color = getColor(datePart);
                 const url = CONFIG.BASE_URL + item.examDetailsUrl;
 
+                let displayTitle = item.examTitle;
+
+                // Đổi màu đỏ cho mã lớp bạn nhập (vd: as) nằm trong dấu ngoặc
+                if (classCode) {
+                    const regex = new RegExp(`(\\()(.*?)(${classCode})(.*?)(\\))`, 'gi');
+                    displayTitle = displayTitle.replace(regex, (match, p1, p2, p3, p4, p5) => {
+                        return `${p1}${p2}<span class="highlight-code">${p3}</span>${p4}${p5}`;
+                    });
+                }
+
                 return `
             <tr>
                 <td class="col-date" style="color: ${color}">${datePart}</td>
-                <td class="col-name">
-                    <strong>${item.examTitle}</strong>
+                <td class="col-name" style="text-align: center;">
+                    <strong>${displayTitle}</strong>
                     ${item.isNew ? '<span class="new-tag">MỚI</span>' : ''}
                 </td>
                 <td class="col-action">
@@ -259,15 +276,31 @@
             }).join('');
         }
 
-        // Logic tìm kiếm thông minh: his 362 hay his362 đều được
         document.getElementById('search-box').addEventListener('input', (e) => {
-            const kw = normalizeStr(e.target.value);
+            const fullText = e.target.value;
+            const searchParts = fullText.trim().toLowerCase().split(' ');
+
             const filtered = allExams.filter(ex => {
-                const titleMatch = normalizeStr(ex.examTitle).includes(kw);
-                const dateMatch = normalizeStr(ex.uploadDate).includes(kw);
-                return titleMatch || dateMatch;
+                const titleNorm = normalize(ex.examTitle);
+                const dateNorm = normalize(ex.uploadDate);
+
+                // Nếu chỉ nhập 1 từ (môn học hoặc ngày tháng)
+                if (searchParts.length === 1) {
+                    const kw = normalize(searchParts[0]);
+                    return titleNorm.includes(kw) || dateNorm.includes(kw);
+                }
+
+                // Nếu nhập nhiều từ (vd: chi 151 as) -> Lọc theo Tên + Lớp
+                const namePart = normalize(searchParts.slice(0, -1).join(''));
+                const codePart = normalize(searchParts[searchParts.length - 1]);
+
+                const hasName = titleNorm.includes(namePart);
+                const hasCode = ex.examTitle.toLowerCase().match(/\((.*?)\)/)?.[1].includes(codePart);
+
+                return hasName && hasCode;
             });
-            render(filtered);
+
+            render(filtered, fullText);
         });
 
         init();
