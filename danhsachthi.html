@@ -165,7 +165,7 @@
     <div class="container">
         <h1>DANH SÁCH THI</h1>
         <div class="search-box">
-            <input type="text" id="search-box" placeholder="Tìm môn, mã môn hoặc ngày (vd: 22/12)..." autocomplete="off"
+            <input type="text" id="search-box" placeholder="Nhập môn (vd: his362, 22/12)..." autocomplete="off"
                 autofocus>
         </div>
 
@@ -188,26 +188,26 @@
         const CONFIG = {
             API: 'https://api.codetabs.com/v1/proxy/?quest=https://tidtu-worker-examlist.ngtuonghy.workers.dev/api/v1/pdaotao/scraping/examlist',
             BASE_URL: 'https://pdaotao.duytan.edu.vn/',
-            STORAGE_KEY: 'dtu_cache_ultra_v2',
-            REFRESH_RATE: 15 * 1000, // 15 giây
+            STORAGE_KEY: 'dtu_cache_smart_v3',
+            REFRESH_RATE: 60000 // Tự cập nhật mỗi 1 phút
         };
 
         const COLORS = ['#28a745', '#e67e22', '#e74c3c', '#8e44ad', '#2980b9', '#16a085', '#d35400', '#2c3e50'];
         const dateColorMap = {};
         let allExams = [];
 
-        async function init() {
-            // 1. Tự động trỏ vào ô nhập ngay khi vào trang
-            document.getElementById('search-box').focus();
+        // Hàm xóa khoảng trắng, gạch ngang và đưa về chữ thường để so sánh
+        function normalizeStr(str) {
+            return str.toLowerCase().replace(/[\s\-_]/g, '');
+        }
 
-            // 2. Load dữ liệu cũ từ bộ nhớ
+        async function init() {
+            document.getElementById('search-box').focus();
             const cached = localStorage.getItem(CONFIG.STORAGE_KEY);
             if (cached) {
                 allExams = JSON.parse(cached);
                 render(allExams);
             }
-
-            // 3. Cập nhật dữ liệu mới ngay lập tức và đặt lịch mỗi phút
             fetchData();
             setInterval(fetchData, CONFIG.REFRESH_RATE);
         }
@@ -259,13 +259,13 @@
             }).join('');
         }
 
-        // Lọc gợi ý tới đâu hiện tới đó (Hỗ trợ lọc cả Ngày tải)
+        // Logic tìm kiếm thông minh: his 362 hay his362 đều được
         document.getElementById('search-box').addEventListener('input', (e) => {
-            const kw = e.target.value.toLowerCase().trim();
+            const kw = normalizeStr(e.target.value);
             const filtered = allExams.filter(ex => {
-                const title = ex.examTitle.toLowerCase();
-                const date = ex.uploadDate.toLowerCase();
-                return title.includes(kw) || date.includes(kw);
+                const titleMatch = normalizeStr(ex.examTitle).includes(kw);
+                const dateMatch = normalizeStr(ex.uploadDate).includes(kw);
+                return titleMatch || dateMatch;
             });
             render(filtered);
         });
