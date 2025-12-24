@@ -750,27 +750,35 @@
 
         function renderCard(row, matchedKey) {
             let sheetName = row._sheetName || "Danh sách chung";
-            let d = "", t = "", p = "---", cs = "";
-            let rawStr = "";
+            let d = "---", t = "---", p = "---", cs = "Chưa xác định";
 
+            // 1. DÒ THÔNG TIN PHÒNG & CƠ SỞ (QUÉT NGƯỢC)
             let dbIdx = db.indexOf(row);
-            for (let j = dbIdx; j >= Math.max(0, dbIdx - 50); j--) {
-                let rStr = db[j].join(" ");
-                if (rStr.includes("Thời gian:") || rStr.includes("Phòng:") || (rStr.includes("Ngày") && rStr.includes("Phòng"))) {
-                    rawStr = rStr;
-                    break;
+            for (let j = dbIdx; j >= Math.max(0, dbIdx - 100); j--) {
+                let rStr = db[j].join(" ").toUpperCase();
+
+                // Lấy Ngày/Giờ
+                if (d === "---") { let dMatch = rStr.match(/(\d{1,2}\/\d{1,2}\/\d{4})/); if (dMatch) d = dMatch[1]; }
+                if (t === "---") { let tMatch = rStr.match(/(\d{1,2}H\d{2})/); if (tMatch) t = tMatch[1]; }
+
+                // CẬP NHẬT: Lấy số phòng (Hỗ trợ định dạng 208/1, 208/2)
+                if (p === "---" && rStr.includes("PHÒNG:")) {
+                    // Regex mới này sẽ lấy cả các ký tự số, chữ và dấu xuyệt /
+                    let pMatch = rStr.match(/PHÒNG:?\s*([A-Z0-9.\-\/]*)/i);
+                    if (pMatch && pMatch[1]) p = pMatch[1].trim();
+                }
+
+                // Lấy tên Cơ sở
+                if (cs === "Chưa xác định") {
+                    if (rStr.includes("QUANG TRUNG")) cs = "K7/25 Quang Trung";
+                    else if (rStr.includes("NGUYỄN VĂN LINH") || rStr.includes("NVL")) cs = "254 Nguyễn Văn Linh";
+                    else if (rStr.includes("HÒA KHÁNH") || rStr.includes("HK")) cs = "3.5ha Hòa Khánh Nam";
+                    else if (rStr.includes("PHAN THANH")) cs = "209 Phan Thanh";
+                    else if (rStr.includes("VIỆT TRỰC")) cs = "Việt Trực";
                 }
             }
 
-            if (rawStr) {
-                let tMatch = rawStr.match(/(\d{1,2}h\d{2})/); if (tMatch) t = tMatch[1];
-                let dMatch = rawStr.match(/(\d{1,2}\/\d{1,2}\/\d{4})/); if (dMatch) d = dMatch[1];
-                let pMatch = rawStr.match(/Phòng:?\s*([^–-]*)/i);
-                if (pMatch && pMatch[1]) p = pMatch[1].trim();
-                let csKeywords = ["Hòa Khánh", "Quang Trung", "Phan Thanh", "Việt Trực"];
-                csKeywords.forEach(k => { if (rawStr.includes(k)) cs = k; });
-            }
-
+            // 2. XÁC ĐỊNH THÔNG TIN SINH VIÊN
             let msvIdx = row.findIndex(cell => {
                 let s = String(cell).trim();
                 return s === matchedKey || (matchedKey.length >= 5 && s.endsWith(matchedKey));
@@ -783,127 +791,86 @@
             let stt = row[msvIdx - 1] || "";
             let fullName = (String(row[msvIdx + 1] || "") + " " + String(row[msvIdx + 2] || "")).replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
 
-            // --- LOGIC SỬA LỖI PDF ---
-            let lopHP = "";
-            let lopSH = "";
-
-            if (row._isPDF) {
-                // Đối với PDF: Tìm các chuỗi có định dạng mã lớp (ví dụ: SOC 151, HIS 362 hoặc K30VTD)
-                // Lớp HP thường chứa mã môn học (ví dụ: SOC 151 A)
-                lopHP = row.find(c => /^[A-Z]{3,4}\s\d{3}/.test(String(c))) || "";
-                // Lớp SH thường bắt đầu bằng chữ K (ví dụ: K30VTD)
-                lopSH = row.find(c => /^K\d{2}/.test(String(c))) || "";
-            } else {
-                // Giữ nguyên logic Excel hiện tại của bạn
-                lopHP = String(row[5] || "").trim();
-                lopSH = String(row[6] || "").trim();
-            }
-
-            let realNote = "";
-            let warnClass = "";
-            for (let i = 0; i < row.length; i++) {
-                let txt = String(row[i] || "").trim().toLowerCase();
-                if (txt.includes("nợ") || txt.includes("cấm") || txt.includes("hp") || txt.includes("vắng")) {
-                    realNote = String(row[i]).trim();
-                    warnClass = "warn";
-                    break;
-                }
+            // Lấy Lớp HP và Lớp SH
+            let lopHP = String(row[5] || "").trim();
+            let lopSH = String(row[6] || "").trim();
+            if (!lopHP || !lopSH) {
+                row.forEach(cell => {
+                    let s = String(cell).trim();
+                    if (/^K\d{2}/.test(s)) lopSH = s;
+                    else if (/[A-Z]{2,4}\s\d{3}/.test(s)) lopHP = s;
+                });
             }
 
             const area = document.getElementById('resultArea');
             const div = document.createElement('div');
             div.className = 'card';
+            div.style.cssText = "background:#fff; border-radius:16px; overflow:hidden; width:100%; max-width:400px; box-sizing:border-box; margin: 0 auto; border: 1px solid #eee; display: flex; flex-direction: column;";
 
             div.innerHTML = `
-        <div class="copyright-header" style="display: none; text-align: center; background: #f8f9fa; color: #6c757d; font-size: 10px; padding: 5px; font-weight: bold; border-bottom: 1px solid #eee;">
+        <div class="copyright-header" style="display:none; text-align:center; padding:10px 5px 0 5px; font-size:11px; font-weight:bold; color:#6c757d;">
             Bản quyền thuộc Tân & https://t.me/Dai_Hoc_Duy_Tan
         </div>
 
-        <div class="c-header" style="background: #d32f2f; font-family: 'Segoe UI', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 900;">THÔNG TIN DỰ THI</div>
+        <div class="c-header" style="background:#d32f2f; color:white; padding:12px; text-align:center; font-weight:900; font-size:18px; text-transform:uppercase; margin-top:5px;">THÔNG TIN DỰ THI</div>
         
-        <div class="c-body" style="padding: 15px; background: #ffffff; display: flex; flex-direction: column; gap: 12px;">
-            <div style="font-size: 11px; color: #7f8c8d; display: flex; align-items: center; gap: 5px;">
-                <span style="font-size: 14px;">📂</span> <b>NGUỒN:</b> <span style="color: #2c3e50;">${sheetName}</span>
-            </div>
+        <div class="c-body" style="padding:15px; display:flex; flex-direction:column; gap:12px; box-sizing:border-box; width: 100%;">
+            <div style="font-size:11px; color:#666; font-weight:bold;">📁 NGUỒN: ${sheetName}</div>
 
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1; background: #f0f7ff; border: 1.5px solid #007bff; border-radius: 12px; padding: 10px; text-align: center;">
-                    <div style="font-size: 11px; color: #007bff; font-weight: bold; margin-bottom: 4px;">🗓️ NGÀY THI</div>
-                    <div style="font-size: 17px; color: #004085; font-weight: 900;">${d}</div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1; border:1.5px solid #007bff; border-radius:15px; padding:10px; text-align:center;">
+                    <div style="font-size:10px; color:#007bff; font-weight:900;">🗓️ NGÀY THI</div>
+                    <div style="font-size:16px; font-weight:900; color:#004085;">${d}</div>
                 </div>
-                <div style="flex: 1; background: #fff5eb; border: 1.5px solid #fd7e14; border-radius: 12px; padding: 10px; text-align: center;">
-                    <div style="font-size: 11px; color: #fd7e14; font-weight: bold; margin-bottom: 4px;">⏰ GIỜ THI</div>
-                    <div style="font-size: 17px; color: #856404; font-weight: 900;">${t}</div>
+                <div style="flex:1; border:1.5px solid #fd7e14; border-radius:15px; padding:10px; text-align:center;">
+                    <div style="font-size:10px; color:#fd7e14; font-weight:900;">⏰ GIỜ THI</div>
+                    <div style="font-size:16px; font-weight:900; color:#856404;">${t}</div>
                 </div>
             </div>
 
-            <div style="text-align: center;">
-                <div style="font-size: 12px; color: #7f8c8d; font-weight: bold; text-transform: uppercase;">PHÒNG THI</div>
-                <div style="font-size: 32px; color: #d32f2f; font-weight: 900; line-height: 1.1; margin: 2px 0;">${p}</div>
-                <div style="font-size: 14px; color: #2c3e50; font-weight: 800;">📍 CƠ SỞ: ${cs}</div>
+            <div style="text-align:center;">
+                <div style="font-size:11px; color:#888; font-weight:bold;">PHÒNG THI</div>
+                <div style="font-size:38px; color:#d32f2f; font-weight:900; line-height:1;">${p}</div>
+                <div style="font-size:15px; color:#333; font-weight:800; margin-top:5px;">📍 CƠ SỞ: <span style="color:#d32f2f;">${cs}</span></div>
             </div>
 
-            <div style="display: flex; align-items: center; justify-content: center; background: #28a745; color: #fff; border-radius: 8px; padding: 10px; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);">
-                <span style="font-size: 11px; text-transform: uppercase; margin-right: 12px; font-weight: bold; letter-spacing: 1px;">MÃ SV:</span>
-                <span style="font-size: 20px; font-weight: 900; letter-spacing: 2px; font-family: monospace;">${msv}</span>
+            <div style="background:#28a745; color:#fff; border-radius:10px; padding:12px; text-align:center; font-weight:900; font-size:20px;">
+                <span style="font-size:11px; opacity:0.8; margin-right:5px;">MÃ SV:</span> ${msv}
             </div>
 
-            <div style="width: 100%; border: 1.5px solid #2c3e50; border-radius: 12px; overflow: hidden; background: #fff;">
-                <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                    <thead>
-                        <tr style="font-size: 10px; font-weight: bold; text-align: center; border-bottom: 1.5px solid #2c3e50; background: #f8f9fa;">
-                            <th style="border-right: 1.5px solid #2c3e50; padding: 8px 2px; width: 12%;">STT</th>
-                            <th style="border-right: 1.5px solid #2c3e50; padding: 8px 4px; width: 45%;">HỌ VÀ TÊN</th>
-                            <th style="border-right: 1.5px solid #2c3e50; padding: 8px 2px; width: 21.5%;">LỚP HỌC<br>PHẦN</th>
-                            <th style="padding: 8px 2px; width: 21.5%;">LỚP SH</th>
-                        </tr>
-                    </thead>
-                    <tbody style="font-size: 13px; font-weight: 800; color: #000;">
-                        <tr style="min-height: 60px; text-align: center;">
-                            <td style="border-right: 1.5px solid #2c3e50; vertical-align: middle;">${stt}</td>
-                            <td style="border-right: 1.5px solid #2c3e50; padding: 8px 4px; vertical-align: middle; overflow-wrap: break-word; line-height: 1.2; font-size: ${fullName.length > 20 ? '11px' : '13px'};">
-                                ${fullName}
-                            </td>
-                            <td style="border-right: 1.5px solid #2c3e50; font-weight: 600; font-size: 11px; color: #16a085; vertical-align: middle;">${lopHP}</td>
-                            <td style="font-size: 11px; font-weight: 600; color: #2980b9; vertical-align: middle;">${lopSH}</td>
-                        </tr>
-                    </tbody>
+            <div style="border:1.5px solid #333; border-radius:12px; overflow:hidden; width: 100%;">
+                <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:12px;">
+                    <tr style="background:#f8f9fa; border-bottom:1.5px solid #333; font-weight:900;">
+                        <th style="padding:8px; border-right:1.5px solid #333; width:15%;">STT</th>
+                        <th style="padding:8px; border-right:1.5px solid #333; width:45%;">HỌ VÀ TÊN</th>
+                        <th style="padding:8px; border-right:1.5px solid #333; width:20%;">LỚP HP</th>
+                        <th style="padding:8px; width:20%;">LỚP SH</th>
+                    </tr>
+                    <tr style="text-align:center; font-weight:800;">
+                        <td style="padding:10px; border-right:1.5px solid #333; word-break: break-all;">${stt}</td>
+                        <td style="padding:10px; border-right:1.5px solid #333; line-height:1.2; white-space: normal; word-break: break-word;">${fullName}</td>
+                        <td style="padding:10px; border-right:1.5px solid #333; color:#16a085; font-size:10px; white-space: normal; word-break: break-all;">${lopHP}</td>
+                        <td style="padding:10px; color:#2980b9; font-size:10px; white-space: normal; word-break: break-all;">${lopSH}</td>
+                    </tr>
                 </table>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; background: #f5f0ff; border-radius: 12px; border: 1.5px dashed #6f42c1;">
-                <span style="font-weight: bold; color: #6f42c1; font-size: 16px;">VỊ TRÍ HÀNG</span>
-                <span style="color: #6f42c1; font-size: 38px; font-weight: 950; line-height: 1;">${rowIdx}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; background:#f3e5f5; border:1.5px dashed #6f42c1; border-radius:15px;">
+                <span style="font-weight:900; color:#6f42c1; font-size:16px;">VỊ TRÍ HÀNG</span>
+                <span style="font-size:35px; font-weight:900; color:#6f42c1;">${rowIdx}</span>
             </div>
 
-            ${realNote && realNote.toUpperCase().includes("NỢ HP") ? `
-            <div style="border-radius: 10px; overflow: hidden; border: 1.5px solid #f5c6cb; background: #fff;">
-                <div style="background: #f8d7da; padding: 8px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed #f5c6cb;">
-                    <span style="font-size: 18px; flex-shrink: 0;">⚠️</span>
-                    <span style="color: #721c24; font-size: 13px; font-weight: 900; text-transform: uppercase;">
-                        GHI CHÚ: ${realNote}
-                    </span>
+            <div class="disclaimer-footer" style="display:none; margin-top:10px; padding:15px; background:#fffdeb; border:1px solid #ffe58f; border-radius:15px; font-size:11px; color:#856404; text-align:center; line-height:1.5; width: 100%; box-sizing: border-box;">
+                <div style="font-weight:900; margin-bottom:5px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                   ⚠️ MIỄN TRỪ TRÁCH NHIỆM
                 </div>
-                <div style="padding: 10px 12px; display: flex; align-items: flex-start; gap: 10px;">
-                    <span style="font-size: 18px; flex-shrink: 0;">🚫</span>
-                    <div style="color: #1b1e21; font-size: 11px; font-weight: 800; line-height: 1.4; white-space: normal; word-break: break-word; flex: 1;">
-                        <span style="color: #d32f2f; text-decoration: underline;">NHẮC NHỞ:</span> 
-                        SINH VIÊN CHƯA ĐÓNG HỌC PHÍ <span style="color: #d32f2f;">KHÔNG ĐƯỢC PHÉP</span> VÀO PHÒNG THI.
-                    </div>
+                <div style="white-space: normal; word-break: break-word;">
+                    Thông tin mang tính chất tra cứu nhanh. Sinh viên vui lòng tự kiểm tra lại danh sách thi chính thức tại website Phòng Đào tạo để đảm bảo độ chính xác tuyệt đối.
                 </div>
-            </div>
-            ` : ''}
-
-<div class="disclaimer-footer" style="display: none; margin-top: 15px; padding: 10px 12px; background: #fffef0; border: 1px solid #ffe58f; border-radius: 8px; font-size: 10.5px; color: #856404; line-height: 1.5; text-align: center; font-weight: bold; white-space: normal; word-break: break-word; width: auto;">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 2px;">
-                    <span style="font-size: 14px;">⚠️</span> <span>MIỄN TRỪ TRÁCH NHIỆM</span>
-                </div>
-                Thông tin mang tính chất tra cứu nhanh. Sinh viên vui lòng tự kiểm tra lại danh sách thi chính thức tại website Phòng Đào tạo để đảm bảo độ chính xác tuyệt đối.
             </div>
         </div>
-        <button class="btn-shot" style="background: #2c3e50; color: #fff; width: 100%; border: none; padding: 15px; font-weight: 900; border-radius: 0 0 16px 16px; cursor: pointer; font-size: 14px; text-transform: uppercase;" onclick="capture(this.parentElement)">📸 CHỤP ẢNH LƯU LẠI</button>
+        <button class="btn-shot" style="background:#2c3e50; color:#fff; width:100%; border:none; padding:15px; font-weight:900; cursor:pointer; text-transform:uppercase; font-size:14px; margin-top: auto;" onclick="capture(this.parentElement)">📸 CHỤP ẢNH LƯU LẠI</button>
     `;
-
             area.appendChild(div);
         }
 
@@ -937,4 +904,3 @@
 </body>
 
 </html>
-
