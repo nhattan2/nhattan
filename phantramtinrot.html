@@ -19,145 +19,160 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            overflow: hidden;
-            /* Chống cuộn */
+            align-items: flex-start;
+            /* Ưu tiên canh trên để cuộn trên mobile */
+            padding: 15px;
+            overflow-y: auto;
         }
 
         .dashboard {
-            width: 95vw;
-            height: 90vh;
+            width: 100%;
             max-width: 1200px;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-        }
-
-        /* Cột bên trái: Nhập liệu */
-        .sidebar {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            /* Mobile mặc định là dọc */
+            gap: 15px;
+        }
+
+        /* Sidebar: Nhập liệu */
+        .sidebar {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
             border: 1px solid #334155;
         }
 
         h2 {
-            margin-bottom: 20px;
-            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
             color: var(--secondary);
             text-align: center;
         }
 
         .input-group {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
             color: #94a3b8;
         }
 
         input {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background: #0f172a;
             border: 2px solid #334155;
-            border-radius: 12px;
+            border-radius: 10px;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             outline: none;
-            transition: 0.3s;
         }
 
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
-        }
-
-        /* Cột bên phải: Kết quả */
+        /* Main Content */
         .main-content {
-            display: grid;
-            grid-template-rows: auto 1fr;
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
+        /* Grid cho các mức % */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            /* 5 cột để dàn đều 10 mức */
-            grid-template-rows: repeat(2, 1fr);
-            gap: 15px;
+            /* Tự động tính toán số cột dựa trên độ rộng màn hình (tối thiểu 100px mỗi ô) */
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
         }
 
         .result-item {
             background: var(--card-bg);
-            border-radius: 15px;
+            padding: 15px 10px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             border: 1px solid #334155;
-            transition: transform 0.2s;
-        }
-
-        .result-item:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
         }
 
         .result-item .percent {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #94a3b8;
-            margin-bottom: 5px;
         }
 
         .result-item .value {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: var(--text);
         }
 
         .result-item .unit {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--secondary);
-            text-transform: uppercase;
         }
 
         /* Ô đặc biệt cho % tùy chỉnh */
         .custom-result {
             background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            grid-column: span 5;
             border-radius: 15px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             padding: 20px;
-        }
-
-        .custom-result .info-box {
             text-align: center;
         }
 
         .custom-result .big-val {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 900;
         }
+
+        /* --- RESPONSIVE CHO MÀN HÌNH LỚN (Desktop) --- */
+        @media (min-width: 768px) {
+            body {
+                align-items: center;
+                /* Canh giữa màn hình khi dùng máy tính */
+            }
+
+            .dashboard {
+                display: grid;
+                grid-template-columns: 320px 1fr;
+                /* Chia cột trái-phải */
+                height: auto;
+            }
+
+            .grid-container {
+                grid-template-columns: repeat(5, 1fr);
+                /* 5 cột đều nhau */
+            }
+        }
+
+        /* --- CỰC NHỎ (Dưới 320px) --- */
+        @media (max-width: 350px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                /* Chỉ 2 cột để không bị quá bé */
+            }
+
+            .custom-result {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .big-val {
+                font-size: 1.5rem;
+            }
+        }
     </style>
-</head>
 
 <body>
 
