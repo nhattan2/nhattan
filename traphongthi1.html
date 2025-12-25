@@ -753,6 +753,7 @@
             let d = "---", t = "---", p = "---", cs = "Chưa xác định";
 
             // 1. DÒ THÔNG TIN PHÒNG & CƠ SỞ (QUÉT NGƯỢC)
+            // 1. DÒ THÔNG TIN PHÒNG & CƠ SỞ (QUÉT NGƯỢC)
             let dbIdx = db.indexOf(row);
             for (let j = dbIdx; j >= Math.max(0, dbIdx - 100); j--) {
                 let rStr = db[j].join(" ").toUpperCase();
@@ -761,23 +762,27 @@
                 if (d === "---") { let dMatch = rStr.match(/(\d{1,2}\/\d{1,2}\/\d{4})/); if (dMatch) d = dMatch[1]; }
                 if (t === "---") { let tMatch = rStr.match(/(\d{1,2}H\d{2})/); if (tMatch) t = tMatch[1]; }
 
-                // CẬP NHẬT: Lấy số phòng (Hỗ trợ định dạng 208/1, 208/2)
+                // --- LOGIC MỚI ĐỂ TÁCH PHÒNG THI ---
                 if (p === "---" && rStr.includes("PHÒNG:")) {
-                    // 1. Lấy toàn bộ phần văn bản sau chữ "PHÒNG:"
+                    // Tách lấy phần sau chữ "PHÒNG:"
                     let rawRoom = rStr.split(/PHÒNG:?/i)[1] || "";
 
-                    // 2. Tách phần địa chỉ cơ sở ra (dựa vào các từ khóa cơ sở quen thuộc)
-                    // Chúng ta cắt chuỗi tại dấu "-" đầu tiên mà phía sau nó là tên cơ sở
-                    let parts = rawRoom.split(/\s*-\s*(?=HÒA KHÁNH|QUANG TRUNG|NGUYỄN VĂN LINH|PHAN THANH|CƠ SỞ)/i);
+                    // Tách dựa trên dấu gạch ngang (-) hoặc các từ khóa cơ sở để lấy phần tên phòng
+                    // Regex này sẽ dừng lại ngay khi gặp các từ khóa cơ sở hoặc dấu gạch ngang có khoảng trắng bao quanh
+                    let parts = rawRoom.split(/\s*-\s*(?=254|NGUYỄN VĂN LINH|HÒA KHÁNH|QUANG TRUNG|PHAN THANH|CƠ SỞ|3\.5HA)/i);
 
-                    if (parts[0]) p = parts[0].trim();
+                    if (parts[0]) {
+                        p = parts[0].trim();
+                        // Xử lý thêm nếu vẫn còn sót dấu gạch ngang ở cuối (ví dụ: "Nhà G- 209-")
+                        p = p.replace(/-$/, "").trim();
+                    }
                 }
 
                 // Lấy tên Cơ sở
                 if (cs === "Chưa xác định") {
                     if (rStr.includes("QUANG TRUNG")) cs = "K7/25 Quang Trung";
-                    else if (rStr.includes("NGUYỄN VĂN LINH") || rStr.includes("NVL")) cs = "254 Nguyễn Văn Linh";
-                    else if (rStr.includes("HÒA KHÁNH") || rStr.includes("HK")) cs = "3.5ha Hòa Khánh Nam";
+                    else if (rStr.includes("NGUYỄN VĂN LINH") || rStr.includes("254 NVL") || rStr.includes("254 NGUYỄN VĂN LINH")) cs = "254 Nguyễn Văn Linh";
+                    else if (rStr.includes("HÒA KHÁNH") || rStr.includes("HK") || rStr.includes("3.5HA")) cs = "3.5ha Hòa Khánh Nam";
                     else if (rStr.includes("PHAN THANH")) cs = "209 Phan Thanh";
                 }
             }
