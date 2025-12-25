@@ -794,6 +794,7 @@
             // Lấy Lớp HP và Lớp SH
             let lopHP = String(row[5] || "").trim();
             let lopSH = String(row[6] || "").trim();
+            let ghiChu = String(row[10] || row[11] || "").trim();
             if (!lopHP || !lopSH) {
                 row.forEach(cell => {
                     let s = String(cell).trim();
@@ -869,6 +870,11 @@
                 </div>
             </div>
         </div>
+        ${ghiChu.toUpperCase().includes("NỢ HP") ? `
+        <div style="margin: 10px 15px; padding: 12px; background: #fff0f0; border: 2px solid #d32f2f; border-radius: 10px; color: #d32f2f; text-align: center; font-weight: bold; animation: blink 1s infinite;">
+            ⚠️ CẢNH BÁO: Bạn đang nợ học phí.
+        </div>
+    ` : ''}
         <button class="btn-shot" style="background:#2c3e50; color:#fff; width:100%; border:none; padding:15px; font-weight:900; cursor:pointer; text-transform:uppercase; font-size:14px; margin-top: auto;" onclick="capture(this.parentElement)">📸 CHỤP ẢNH LƯU LẠI</button>
     `;
             area.appendChild(div);
