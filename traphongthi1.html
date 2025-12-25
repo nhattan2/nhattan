@@ -763,9 +763,14 @@
 
                 // CẬP NHẬT: Lấy số phòng (Hỗ trợ định dạng 208/1, 208/2)
                 if (p === "---" && rStr.includes("PHÒNG:")) {
-                    // Regex mới này sẽ lấy cả các ký tự số, chữ và dấu xuyệt /
-                    let pMatch = rStr.match(/PHÒNG:?\s*([A-Z0-9.\-\/]*)/i);
-                    if (pMatch && pMatch[1]) p = pMatch[1].trim();
+                    // 1. Lấy toàn bộ phần văn bản sau chữ "PHÒNG:"
+                    let rawRoom = rStr.split(/PHÒNG:?/i)[1] || "";
+
+                    // 2. Tách phần địa chỉ cơ sở ra (dựa vào các từ khóa cơ sở quen thuộc)
+                    // Chúng ta cắt chuỗi tại dấu "-" đầu tiên mà phía sau nó là tên cơ sở
+                    let parts = rawRoom.split(/\s*-\s*(?=HÒA KHÁNH|QUANG TRUNG|NGUYỄN VĂN LINH|PHAN THANH|CƠ SỞ)/i);
+
+                    if (parts[0]) p = parts[0].trim();
                 }
 
                 // Lấy tên Cơ sở
@@ -774,7 +779,6 @@
                     else if (rStr.includes("NGUYỄN VĂN LINH") || rStr.includes("NVL")) cs = "254 Nguyễn Văn Linh";
                     else if (rStr.includes("HÒA KHÁNH") || rStr.includes("HK")) cs = "3.5ha Hòa Khánh Nam";
                     else if (rStr.includes("PHAN THANH")) cs = "209 Phan Thanh";
-                    else if (rStr.includes("VIỆT TRỰC")) cs = "Việt Trực";
                 }
             }
 
