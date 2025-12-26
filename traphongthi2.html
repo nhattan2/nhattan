@@ -69,6 +69,10 @@
             background: var(--success);
         }
 
+        .btn-upload {
+            background: var(--orange);
+        }
+
         .btn-clear {
             background: var(--danger);
         }
@@ -124,7 +128,6 @@
             border: none;
         }
 
-        /* Tùy chỉnh riêng cho Office Viewer để ẩn thanh công cụ thừa */
         .excel-mode {
             height: calc(100% + 65px);
             margin-top: -40px;
@@ -147,19 +150,24 @@
     <div class="header-controls">
         <div class="input-row">
             <button type="button" class="btn-paste" onclick="pasteAndLoad()">🚀 DÁN</button>
-            <input type="text" id="fileUrl" placeholder="Dán link Excel hoặc PDF..." autocomplete="off">
+            <input type="text" id="fileUrl" placeholder="Dán link hoặc chọn file..." autocomplete="off">
+
+            <input type="file" id="fileInput" hidden accept=".pdf,.xlsx,.xls" onchange="handleFileUpload(this)">
+            <button type="button" class="btn-upload" onclick="document.getElementById('fileInput').click()">📁 TẢI
+                FILE</button>
+
             <button type="button" class="btn-clear" onclick="clearLink()">🗑️ XÓA</button>
         </div>
 
         <div class="marquee-container">
             <div class="marquee-content">
                 <div class="text-item">
-                    🔗 HỖ TRỢ EXCEL & PDF: Chuột phải file Lịch thi tại trang PĐT Duy Tân -> Chọn "Sao chép địa chỉ liên
-                    kết" -> Bấm nút DÁN. 💡 MẸO: Với file Excel, bấm Kính lúp 🔍 để tìm MSSV. Với PDF, nhấn Ctrl+F.
+                    🔗 HỖ TRỢ EXCEL & PDF: Dán link từ trang PĐT hoặc bấm "TẢI FILE" để chọn file từ máy. 💡 MẸO: Với
+                    Excel, dùng Kính lúp 🔍. Với PDF, nhấn Ctrl+F để tìm MSSV nhanh hơn.
                 </div>
                 <div class="text-item">
-                    🔗 HỖ TRỢ EXCEL & PDF: Chuột phải file Lịch thi tại trang PĐT Duy Tân -> Chọn "Sao chép địa chỉ liên
-                    kết" -> Bấm nút DÁN. 💡 MẸO: Với file Excel, bấm Kính lúp 🔍 để tìm MSSV. Với PDF, nhấn Ctrl+F.
+                    🔗 HỖ TRỢ EXCEL & PDF: Dán link từ trang PĐT hoặc bấm "TẢI FILE" để chọn file từ máy. 💡 MẸO: Với
+                    Excel, dùng Kính lúp 🔍. Với PDF, nhấn Ctrl+F để tìm MSSV nhanh hơn.
                 </div>
             </div>
         </div>
@@ -167,12 +175,15 @@
 
     <div class="viewer-container">
         <div id="placeholder">
-            <b>Hệ thống đang chờ link danh sách thi (Excel hoặc PDF)...</b>
+            <b>Hệ thống đang chờ link hoặc file danh sách thi...</b>
         </div>
         <iframe id="fileViewer" src="" style="display: none;"></iframe>
     </div>
 
     <script>
+        // Lưu trữ URL tạm thời để giải phóng bộ nhớ
+        let currentObjectUrl = null;
+
         async function pasteAndLoad() {
             try {
                 const text = await navigator.clipboard.readText();
@@ -187,8 +198,25 @@
             }
         }
 
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Xóa URL cũ nếu có để tránh rò rỉ bộ nhớ
+            if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+
+            document.getElementById('fileUrl').value = `File: ${file.name}`;
+            currentObjectUrl = URL.createObjectURL(file);
+
+            const isPdf = file.name.toLowerCase().endsWith('.pdf');
+            displayFile(currentObjectUrl, isPdf, true);
+        }
+
         function clearLink() {
             document.getElementById('fileUrl').value = '';
+            document.getElementById('fileInput').value = '';
+            if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+
             const viewer = document.getElementById('fileViewer');
             const placeholder = document.getElementById('placeholder');
             viewer.src = '';
@@ -199,22 +227,30 @@
 
         function loadContent() {
             const url = document.getElementById('fileUrl').value.trim();
-            if (!url) return;
+            if (!url || url.startsWith('File: ')) return;
 
+            const isPdf = url.toLowerCase().split('?')[0].endsWith('.pdf');
+            displayFile(url, isPdf, false);
+        }
+
+        function displayFile(url, isPdf, isLocalFile) {
             const viewer = document.getElementById('fileViewer');
             const placeholder = document.getElementById('placeholder');
-
-            // Kiểm tra định dạng file
-            const isPdf = url.toLowerCase().split('?')[0].endsWith('.pdf');
-
             let finalUrl = "";
 
             if (isPdf) {
-                // Với PDF, dùng Google Docs Viewer để hiển thị tốt nhất trên trình duyệt web
-                finalUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                // Nếu là file PDF cục bộ, hiển thị trực tiếp bằng trình duyệt. 
+                // Nếu là link web, dùng Google Viewer.
+                finalUrl = isLocalFile ? url : `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
                 viewer.classList.remove('excel-mode');
             } else {
-                // Với Excel/Word, dùng Office Online Viewer như cũ
+                // Với Excel: Chỉ hiển thị được qua Office Online nếu có link web. 
+                // Lưu ý: File Excel cục bộ không thể xem trực tiếp qua iframe Office Online.
+                if (isLocalFile) {
+                    alert("Lưu ý: Trình xem trực tuyến không hỗ trợ xem trực tiếp file Excel từ máy tính vì lý do bảo mật của Microsoft. Vui lòng sử dụng Link hoặc chuyển file sang PDF.");
+                    clearLink();
+                    return;
+                }
                 const officeParams = '&wdInNav=0&activeCell=A1&wdActiveSheet=Sheet1';
                 finalUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}${officeParams}`;
                 viewer.classList.add('excel-mode');
